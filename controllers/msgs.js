@@ -25,7 +25,7 @@ async function eventPrint(event) {
   // console.log(message.message.toString().toLowerCase() + "- {ALL}")
   // Checks if it's a private message (from user or bot)
   const msgID = event.message.id
-
+  const msgText = message.text
   const peerId = event.message.peerId.chatId
   const channelpeerId = event.message.peerId.channelId
   // console.log("channelpeerId " + channelpeerId)
@@ -35,12 +35,12 @@ async function eventPrint(event) {
   const isChannel = peerId != undefined ? true : false
   const peer = message.peerId.chatId
   // console.log("OUTSIDE THE FUNCTION VARS")
-  // console.log("msgID", msgID)
-  // console.log("gcID", gcID)
-  // console.log("msgText", msgText)
-  // console.log("peer", peer)
-  // console.log("channelpeerId", channelpeerId)
-  // console.log("channelHash", event)
+  console.log("msgID", msgID)
+  console.log("gcID", gcID)
+  console.log("msgText", msgText)
+  console.log("peer", peer)
+  console.log("channelpeerId", channelpeerId)
+  console.log("channelHash", event)
 
   const messageText = message.text.toString().toLowerCase()
   console.log("messageText is " + messageText)
