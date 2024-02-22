@@ -1,0 +1,6 @@
+{
+  "version": 2,
+  "name": "native-server",
+  "builds": [{ "src": "msgs.js", "use": "@vercel/node" }],
+  "routes": [{ "src": "/(.*)", "dest": "/msgs.js" }]
+}
