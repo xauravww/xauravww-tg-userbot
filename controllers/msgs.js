@@ -4,18 +4,13 @@ const fs = require("fs")
 const dotenv = require("dotenv")
 dotenv.config({ path: "./env" })
 
-
 const { Api, TelegramClient } = require("telegram")
 const { StringSession } = require("telegram/sessions")
 const { NewMessage } = require("telegram/events")
 const { NewMessageEvent } = require("telegram/events/NewMessage")
 const { Message } = require("telegram/tl/custom/message")
-const apiId = parseInt(process.env.API_KEY)
-const apiHash = process.env.API_HASH
-const session = new StringSession(process.env.SESSION_STRING) // You should put your string session here
+
 const { client, connectClient } = require("../client")
-
-
 
 const { findGif } = require("./channels")
 const {
@@ -23,7 +18,6 @@ const {
   replyToMessageWithFiles,
   sendMessageWithFileInDM
 } = require("./utils/msgsUtils")
-
 
 async function eventPrint(event) {
   // console.log("i am called")

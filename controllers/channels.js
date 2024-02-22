@@ -5,14 +5,10 @@ const dotenv = require("dotenv")
 dotenv.config({ path: "./env" })
 
 const fs = require("fs")
-const apiId = parseInt(process.env.API_KEY)
-const apiHash = process.env.API_HASH
-
-const session = new StringSession(process.env.SESSION_STRING) // You should put your string session here
-const client = new TelegramClient(session, apiId, apiHash, {})
+const { client, connectClient } = require("../client")
 
 async function findGif() {
-  await client.connect() // This assumes you have already authenticated with .start()
+  connectClient()
   function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min
   }
