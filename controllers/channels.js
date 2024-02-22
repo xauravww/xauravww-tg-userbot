@@ -1,9 +1,6 @@
 const { Api, TelegramClient } = require("telegram")
 const { StringSession } = require("telegram/sessions")
 
-const dotenv = require("dotenv")
-dotenv.config({ path: "./env" })
-
 const fs = require("fs")
 const { client, connectClient } = require("../client")
 

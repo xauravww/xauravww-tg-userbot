@@ -1,22 +1,20 @@
 const path = require("path")
 var request = require("request")
 const fs = require("fs")
-const dotenv = require("dotenv")
-dotenv.config({ path: "./env" })
 
 const { Api, TelegramClient } = require("telegram")
-const { StringSession } = require("telegram/sessions")
+
 const { NewMessage } = require("telegram/events")
-const { NewMessageEvent } = require("telegram/events/NewMessage")
-const { Message } = require("telegram/tl/custom/message")
 
 const { client, connectClient } = require("../client")
 
 const { findGif } = require("./channels")
+console.log("client is working")
 const {
   replyToMessage,
   replyToMessageWithFiles,
-  sendMessageWithFileInDM
+  sendMessageWithFileInDM,
+  sendMessageInDM
 } = require("./utils/msgsUtils")
 
 async function eventPrint(event) {
@@ -40,7 +38,7 @@ async function eventPrint(event) {
   console.log("msgText", msgText)
   console.log("peer", peer)
   console.log("channelpeerId", channelpeerId)
-  console.log("channelHash", event)
+  // console.log("channelHash", event)
 
   const messageText = message.text.toString().toLowerCase()
   console.log("messageText is " + messageText)
@@ -146,7 +144,7 @@ async function eventPrint(event) {
                   cleanBody,
                   gcID,
                   message.id,
-                  message.peerId.chatId || channelpeerId
+                   channelpeerId
                 )
               } else {
                 // Handle other cases or provide a default behavior
@@ -154,15 +152,15 @@ async function eventPrint(event) {
               }
             } catch (err) {
               console.error(err)
-              await client.invoke(
-                new Api.messages.SendMessage({
-                  peer: gcID,
-                  replyTo: new Api.InputReplyToMessage({
-                    replyToMsgId: message.id
-                  }),
-                  message: "Lyrics not found"
-                })
-              )
+              // await client.invoke(
+              //   new Api.messages.SendMessage({
+              //     peer: gcID,
+              //     replyTo: new Api.InputReplyToMessage({
+              //       replyToMsgId: message.id
+              //     }),
+              //     message: "Lyrics not found"
+              //   })
+              // )
 
               replyToMessage(
                 "Lyrics not found",
@@ -186,25 +184,28 @@ async function eventPrint(event) {
     // read message
     if (messageText == "userid") {
       const sender = await message.getSender()
-      console.log("sender is", sender)
-      await client.sendMessage(sender, {
-        message: `hi your userid is ${message.senderId}`
-      })
+      // console.log("sender is", sender)
+      // await client.sendMessage(sender, {
+      //   message: `hi your userid is ${message.senderId}`
+      // })
+      const msgText = `hi your userid is ${message.senderId}`
+      sendMessageInDM(msgText, sender.id)
     }
     if (messageText.startsWith("gif")) {
       // console.log("Entered this random gif fn")
       const sender = await message.getSender()
-      sendMessageInDM("Please wait... sending uhh a random gif", senderId)
-      findGif().then((data) => {})
-      const files = path.resolve("./output.mp4")
       const senderId = sender.id
+      sendMessageInDM("Please wait... sending uhh a random gif", senderId)
+      await findGif().then((data) => {})
+      const files = path.resolve("./output.mp4")
+      console.log(files)
       sendMessageWithFileInDM("Here is your random GIF", files, senderId)
     }
   }
 }
 
 ;(async function () {
-  await connectClient()
+  connectClient()
 
   client.addEventHandler(async (event) => {
     await eventPrint(event)
