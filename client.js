@@ -3,8 +3,8 @@ const { Api, TelegramClient } = require("telegram")
 const dotenv = require("dotenv")
 dotenv.config({ path: "./env" })
 
-const apiId = parseInt(process.env.API_KEY)
-const apiHash = process.env.API_HASH
+const apiId = parseInt(process.env.API_KEY || "123456")
+const apiHash = process.env.API_HASH || "abcdefghijklmnopqrstuvwxyz"
 
 const session = new StringSession(process.env.SESSION_STRING) // You should put your string session here
 
