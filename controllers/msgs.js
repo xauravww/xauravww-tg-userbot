@@ -14,7 +14,8 @@ const {
   replyToMessage,
   replyToMessageWithFiles,
   sendMessageWithFileInDM,
-  sendMessageInDM
+  sendMessageInDM,
+  checkPing
 } = require("./utils/msgsUtils")
 
 async function eventPrint(event) {
@@ -43,6 +44,33 @@ async function eventPrint(event) {
   const messageText = message.text.toString().toLowerCase()
   console.log("messageText is " + messageText)
   if (!event.isPrivate) {
+    if (messageText.startsWith("ping")) {
+      const sender = await message.getSender()
+
+      try {
+        const pingValue = await checkPing("google.com") // Replace with desired hostname
+        if (pingValue !== null) {
+          console.log(`Ping to google.com: ${pingValue} ms`)
+          const sender = await message.getSender()
+          const msgText = `Pong: ${pingValue} ms`
+
+          replyToMessage(msgText, gcID, msgID, peer, channelpeerId)
+        } else {
+          console.log(`Error occurred while checking ping.`)
+          const sender = await message.getSender()
+          const msgText = `Error occurred while checking ping`
+
+          replyToMessage(msgText, gcID, msgID, peer, channelpeerId)
+        }
+      } catch (err) {
+        console.error("Error occurred while checking ping:", err)
+        const sender = await message.getSender()
+        const msgText = `Error occurred while checking ping ${err}`
+
+        replyToMessage(msgText, gcID, msgID, peer, channelpeerId)
+      }
+    }
+
     if (messageText.startsWith("dp")) {
       const sender = await message.getSender()
 
@@ -132,41 +160,17 @@ async function eventPrint(event) {
             console.log("chat id ", message.peerId.chatId)
 
             try {
-              if (channelpeerId) {
-                // If it's a channel, use channelpeerId
-                console.log("channelpeerid executed")
-
-                replyToMessage(cleanBody, gcID, message.id, channelpeerId)
-              } else if (peerId) {
-                console.log("peerid executed")
-
-                replyToMessage(
-                  cleanBody,
-                  gcID,
-                  message.id,
-                   channelpeerId
-                )
-              } else {
-                // Handle other cases or provide a default behavior
-                console.error("Unknown chat type")
-              }
+              replyToMessage(cleanBody, gcID, message.id, peer, channelpeerId)
             } catch (err) {
               console.error(err)
-              // await client.invoke(
-              //   new Api.messages.SendMessage({
-              //     peer: gcID,
-              //     replyTo: new Api.InputReplyToMessage({
-              //       replyToMsgId: message.id
-              //     }),
-              //     message: "Lyrics not found"
-              //   })
-              // )
 
               replyToMessage(
                 "Lyrics not found",
                 gcID,
                 message.id,
-                message.peerId.chatId || channelpeerId || gcID
+
+                peer,
+                channelpeerId
               )
             }
           }
@@ -182,14 +186,47 @@ async function eventPrint(event) {
     console.log(message.senderId)
 
     // read message
+
+    if (messageText.startsWith("ping")) {
+      const sender = await message.getSender()
+
+      try {
+        const pingValue = await checkPing("google.com") // Replace with desired hostname
+        if (pingValue !== null) {
+          console.log(`Ping to google.com: ${pingValue} ms`)
+          const sender = await message.getSender()
+          const msgText = `Pong: ${pingValue} ms`
+          sendMessageInDM(msgText, sender.id)
+        } else {
+          console.log(`Error occurred while checking ping.`)
+          const sender = await message.getSender()
+          const msgText = `Error occurred while checking ping`
+          sendMessageInDM(msgText, sender.id)
+        }
+      } catch (err) {
+        console.error("Error occurred while checking ping:", err)
+        const sender = await message.getSender()
+        const msgText = `Error occurred while checking ping ${err}`
+        sendMessageInDM(msgText, sender.id)
+      }
+    }
+
     if (messageText == "userid") {
       const sender = await message.getSender()
-      // console.log("sender is", sender)
-      // await client.sendMessage(sender, {
-      //   message: `hi your userid is ${message.senderId}`
-      // })
+
       const msgText = `hi your userid is ${message.senderId}`
       sendMessageInDM(msgText, sender.id)
+    }
+
+    if (messageText.startsWith("stop")) {
+      const sender = await message.getSender()
+
+      const stopParams = message.text.toLowerCase().replace("stop ", "")
+      console.log("stopParams " + stopParams)
+      const msgText = `stopping the server`
+      sendMessageInDM(stopParams, sender.id)
+
+      if (stopParams == process.env.CRASH_PASS) process.exit(0)
     }
     if (messageText.startsWith("gif")) {
       // console.log("Entered this random gif fn")
@@ -206,10 +243,6 @@ async function eventPrint(event) {
 
 ;(async function () {
   connectClient()
-
-  client.addEventHandler(async (event) => {
-    await eventPrint(event)
-  }, new NewMessage({}))
 })()
 
 module.exports = { eventPrint }
