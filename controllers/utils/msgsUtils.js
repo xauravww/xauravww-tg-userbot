@@ -7,6 +7,8 @@ const { Api, TelegramClient } = require("telegram")
 const { client, connectClient } = require("../../client")
 const path = require("path")
 
+const ping = require("ping")
+
 async function replyToMessage(msgText, gcID, msgID, peer, channelpeerId) {
   console.log("msgID", msgID)
   console.log("gcID", gcID)
@@ -146,9 +148,21 @@ async function sendMessageWithFileInDM(msgText, file, senderId) {
   })
 }
 
+// Function to check ping
+async function checkPing(hostname) {
+  try {
+    const res = await ping.promise.probe(hostname)
+    return res.avg
+  } catch (err) {
+    console.error("Error occurred while pinging:", err)
+    return null
+  }
+}
+
 module.exports = {
   replyToMessage,
   replyToMessageWithFiles,
   sendMessageInDM,
-  sendMessageWithFileInDM
+  sendMessageWithFileInDM,
+  checkPing
 }
