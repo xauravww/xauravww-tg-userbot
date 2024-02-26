@@ -4,7 +4,7 @@ const require = createRequire(import.meta.url)
 const path = require("path")
 var request = require("request")
 const fs = require("fs")
-
+const ping = require("ping")
 const { Api, TelegramClient } = require("telegram")
 
 const { NewMessage } = require("telegram/events")
@@ -19,8 +19,7 @@ import {
   replyToMessage,
   replyToMessageWithFiles,
   sendMessageWithFileInDM,
-  sendMessageInDM,
-  checkPing
+  sendMessageInDM
 } from "./utils/msgsUtils.js"
 
 //for keeping server active
@@ -60,26 +59,39 @@ async function eventPrint(event) {
       const sender = await message.getSender()
 
       try {
-        const pingValue = await checkPing("https://google.com") // Replace with desired hostname
-        if (pingValue !== null) {
-          console.log(`Ping to google.com: ${pingValue} ms`)
-          const sender = await message.getSender()
-          const msgText = `Pong: ${pingValue} ms`
+        const host = "www.google.com"
 
-          replyToMessage(msgText, gcID, msgID, peer, channelpeerId)
-        } else {
-          console.log(`Error occurred while checking ping.`)
-          const sender = await message.getSender()
-          const msgText = `Error occurred while checking ping`
-
-          replyToMessage(msgText, gcID, msgID, peer, channelpeerId)
-        }
+        ping.promise
+          .probe(host)
+          .then(function (res) {
+            console.log(`Pong : ${res.time} ms`)
+            replyToMessage(
+              `Pong : ${res.time} ms`,
+              gcID,
+              msgID,
+              peer,
+              channelpeerId
+            )
+          })
+          .catch(function (err) {
+            console.error(err)
+            replyToMessage(
+              `Some error occurred while checking ping ${err}`,
+              gcID,
+              msgID,
+              peer,
+              channelpeerId
+            )
+          })
       } catch (err) {
-        console.error("Error occurred while checking ping:", err)
-        const sender = await message.getSender()
-        const msgText = `Error occurred while checking ping ${err}`
-
-        replyToMessage(msgText, gcID, msgID, peer, channelpeerId)
+        console.log(err)
+        replyToMessage(
+          `Some error occurred while checking ping ${err}`,
+          gcID,
+          msgID,
+          peer,
+          channelpeerId
+        )
       }
     }
 
@@ -230,21 +242,23 @@ async function eventPrint(event) {
       const sender = await message.getSender()
 
       try {
-        const pingValue = await checkPing("google.com") // Replace with desired hostname
-        if (pingValue !== null) {
-          console.log(`Ping to google.com: ${pingValue} ms`)
-          const sender = await message.getSender()
-          const msgText = `Pong: ${pingValue} ms`
-          sendMessageInDM(msgText, sender.id)
-        } else {
-          console.log(`Error occurred while checking ping.`)
-          const sender = await message.getSender()
-          const msgText = `Error occurred while checking ping`
-          sendMessageInDM(msgText, sender.id)
-        }
+        const host = "www.google.com"
+
+        ping.promise
+          .probe(host)
+          .then(function (res) {
+            console.log(`Pong : ${res.time} ms`)
+
+            sendMessageInDM(`Pong : ${res.time} ms`, sender.id)
+          })
+          .catch(function (err) {
+            console.error(err)
+
+            const msgText = `Error occurred while checking ping ${err}`
+            sendMessageInDM(msgText, sender.id)
+          })
       } catch (err) {
-        console.error("Error occurred while checking ping:", err)
-        const sender = await message.getSender()
+        console.log(err)
         const msgText = `Error occurred while checking ping ${err}`
         sendMessageInDM(msgText, sender.id)
       }
