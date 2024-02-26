@@ -1,3 +1,6 @@
+import { createRequire } from "module"
+const require = createRequire(import.meta.url)
+
 const { StringSession } = require("telegram/sessions")
 const { Api, TelegramClient } = require("telegram")
 const path = require("path")
@@ -39,4 +42,4 @@ async function connectClient() {
   // console.log(client.session.save())
 }
 
-module.exports = { client, connectClient }
+export { client, connectClient }
