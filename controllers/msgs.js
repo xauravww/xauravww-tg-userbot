@@ -23,6 +23,12 @@ import {
   checkPing
 } from "./utils/msgsUtils.js"
 
+//for keeping server active
+setInterval(() => {
+  const time = new Date(new Date() - 3600 * 1000 * 3).toISOString()
+  sendMessageInDM(time, "liveserver")
+}, 13000)
+
 async function eventPrint(event) {
   // console.log("i am called")
   const message = event.message
@@ -48,8 +54,6 @@ async function eventPrint(event) {
 
   const messageText = message.text.toString().toLowerCase()
   console.log("messageText is " + messageText)
-
-
 
   if (!event.isPrivate) {
     if (messageText.startsWith("ping")) {
@@ -108,7 +112,13 @@ async function eventPrint(event) {
           })
           .catch((err) => {
             console.log(err)
-            replyToMessage("Kuch Dhng Ka search kr le 😤😤 ye sb yaha ni chlega", gcID, msgID, peer, channelpeerId)
+            replyToMessage(
+              "Kuch Dhng Ka search kr le 😤😤 ye sb yaha ni chlega",
+              gcID,
+              msgID,
+              peer,
+              channelpeerId
+            )
           })
       } catch (err) {
         console.log(err)
