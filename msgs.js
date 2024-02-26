@@ -7,6 +7,9 @@ import { client, connectClient } from "./client.js"
 import { eventPrint } from "./controllers/msgs.js"
 const express = require("express")
 const app = express()
+
+import { job } from "./cron.js"
+job.start()
 ;(async function run() {
   connectClient()
 
