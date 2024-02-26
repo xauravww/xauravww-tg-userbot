@@ -1,10 +1,13 @@
 // await client.sendMessage(sender, {
 //   message: `hi your id is ${message.senderId}`
 // })
+import { createRequire } from "module"
+const require = createRequire(import.meta.url)
+
 const { StringSession } = require("telegram/sessions")
 const { Api, TelegramClient } = require("telegram")
 
-const { client, connectClient } = require("../../client")
+import { client, connectClient } from "../../client.js"
 const path = require("path")
 
 const ping = require("ping")
@@ -159,7 +162,7 @@ async function checkPing(hostname) {
   }
 }
 
-module.exports = {
+export {
   replyToMessage,
   replyToMessageWithFiles,
   sendMessageInDM,

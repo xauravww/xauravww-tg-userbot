@@ -1,3 +1,6 @@
+import { createRequire } from "module"
+const require = createRequire(import.meta.url)
+
 const path = require("path")
 var request = require("request")
 const fs = require("fs")
@@ -6,17 +9,19 @@ const { Api, TelegramClient } = require("telegram")
 
 const { NewMessage } = require("telegram/events")
 
-const { client, connectClient } = require("../client")
+import { client, connectClient } from "../client.js"
 
-const { findGif } = require("./channels")
+import gemini from "../gemini.js"
+
+import { findGif } from "./channels.js"
 console.log("client is working")
-const {
+import {
   replyToMessage,
   replyToMessageWithFiles,
   sendMessageWithFileInDM,
   sendMessageInDM,
   checkPing
-} = require("./utils/msgsUtils")
+} from "./utils/msgsUtils.js"
 
 async function eventPrint(event) {
   // console.log("i am called")
@@ -82,6 +87,20 @@ async function eventPrint(event) {
           peer,
           channelpeerId
         )
+      } catch (err) {
+        console.log(err)
+      }
+    }
+
+    if (messageText.startsWith("q")) {
+      const sender = await message.getSender()
+      const newString = messageText.replace("q ", "")
+
+      try {
+        const data = gemini(newString).then((data) => {
+          console.log("Data ye aaraar h " + data)
+          replyToMessage(data, gcID, msgID, peer, channelpeerId)
+        })
       } catch (err) {
         console.log(err)
       }
@@ -245,4 +264,4 @@ async function eventPrint(event) {
   connectClient()
 })()
 
-module.exports = { eventPrint }
+export { eventPrint }

@@ -1,8 +1,11 @@
-const { Api, TelegramClient } = require("telegram")
-const { StringSession } = require("telegram/sessions")
+import { createRequire } from "module"
+const require = createRequire(import.meta.url)
+
+import { Api, TelegramClient } from "telegram"
+// import { StringSession } from "telegram/sessions"
 
 const fs = require("fs")
-const { client, connectClient } = require("../client")
+import { client, connectClient } from "../client.js"
 
 async function findGif() {
   connectClient()
@@ -44,4 +47,4 @@ async function findGif() {
   }
 }
 
-module.exports = { findGif }
+export { findGif }

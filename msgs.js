@@ -1,7 +1,10 @@
+import { createRequire } from "module"
+const require = createRequire(import.meta.url)
+
 const { NewMessage } = require("telegram/events")
-require("./client")
-const { client, connectClient } = require("./client")
-const { eventPrint } = require("./controllers/msgs")
+import "./client.js"
+import { client, connectClient } from "./client.js"
+import { eventPrint } from "./controllers/msgs.js"
 const express = require("express")
 const app = express()
 ;(async function run() {
