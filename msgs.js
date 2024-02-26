@@ -10,9 +10,6 @@ const app = express()
 
 import { job } from "./cron.js"
 job.start()
-  
-
-  
 ;(async function run() {
   connectClient()
 

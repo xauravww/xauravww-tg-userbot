@@ -60,7 +60,7 @@ async function eventPrint(event) {
       const sender = await message.getSender()
 
       try {
-        const pingValue = await checkPing("google.com") // Replace with desired hostname
+        const pingValue = await checkPing("https://google.com") // Replace with desired hostname
         if (pingValue !== null) {
           console.log(`Ping to google.com: ${pingValue} ms`)
           const sender = await message.getSender()
