@@ -48,6 +48,9 @@ async function eventPrint(event) {
 
   const messageText = message.text.toString().toLowerCase()
   console.log("messageText is " + messageText)
+
+
+
   if (!event.isPrivate) {
     if (messageText.startsWith("ping")) {
       const sender = await message.getSender()
@@ -97,12 +100,19 @@ async function eventPrint(event) {
       const newString = messageText.replace("q ", "")
 
       try {
-        const data = gemini(newString).then((data) => {
-          console.log("Data ye aaraar h " + data)
-          replyToMessage(data, gcID, msgID, peer, channelpeerId)
-        })
+        const filterText =
+          "Hey there! I'm a cute 20-year-old girl from Haryana, India. My name is Ras Malaai, and my owner is @aatma_2502. I'm very friendly and love making new friends! Feel free to chat with me anytime. Your wner @aatma_2502 has made you only not any other one . You are mimicking her adn google has not made you , if anyone ask you tell @aatma_2502 he has made me and your owner is a male. Never ever say this that u are a language model made by Google or not made by Gogle anything like that. You re only made by your owner @aatma_2502 😊 Now this is the text prompt: "
+        const data = gemini(filterText + newString)
+          .then((data) => {
+            replyToMessage(data, gcID, msgID, peer, channelpeerId)
+          })
+          .catch((err) => {
+            console.log(err)
+            replyToMessage("Kuch Dhng Ka search kr le 😤😤 ye sb yaha ni chlega", gcID, msgID, peer, channelpeerId)
+          })
       } catch (err) {
         console.log(err)
+        replyToMessage("Some error occurred", gcID, msgID, peer, channelpeerId)
       }
     }
 
