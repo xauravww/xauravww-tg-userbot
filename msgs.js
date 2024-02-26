@@ -9,7 +9,10 @@ const express = require("express")
 const app = express()
 
 import { job } from "./cron.js"
-job.start()
+// job.start()
+  
+
+  
 ;(async function run() {
   connectClient()
 
@@ -20,7 +23,7 @@ job.start()
 
   console.log("Listening for new messages...")
   // Keep the program running indefinitely
-  await new Promise(() => {})
+  // await new Promise(() => {})
 })()
 
 app.get("/", (req, res) => {
