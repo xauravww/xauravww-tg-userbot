@@ -24,10 +24,10 @@ import {
 } from "./utils/msgsUtils.js"
 
 //for keeping server active
-setInterval(() => {
-  const time = new Date(new Date() - 3600 * 1000 * 3).toISOString()
-  sendMessageInDM(time, "liveserver")
-}, 13000)
+// setInterval(() => {
+//   const time = new Date(new Date() - 3600 * 1000 * 3).toISOString()
+//   sendMessageInDM(time, "liveserver")
+// }, 13000)
 
 async function eventPrint(event) {
   // console.log("i am called")

@@ -9,7 +9,7 @@ const express = require("express")
 const app = express()
 
 import { job } from "./cron.js"
-// job.start()
+job.start()
   
 
   
