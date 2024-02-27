@@ -12,7 +12,7 @@ const { NewMessage } = require("telegram/events")
 import { client, connectClient } from "../client.js"
 
 import gemini from "../gemini.js"
-
+import { getPingTime } from "../ping.js"
 import { findGif } from "./channels.js"
 console.log("client is working")
 import {
@@ -61,28 +61,39 @@ async function eventPrint(event) {
       try {
         const host = "www.google.com"
 
-        ping.promise
-          .probe(host)
-          .then(function (res) {
-            console.log(`Pong : ${res.time} ms`)
-            replyToMessage(
-              `Pong : ${res.time} ms`,
-              gcID,
-              msgID,
-              peer,
-              channelpeerId
-            )
-          })
-          .catch(function (err) {
-            console.error(err)
-            replyToMessage(
-              `Some error occurred while checking ping ${err}`,
-              gcID,
-              msgID,
-              peer,
-              channelpeerId
-            )
-          })
+        // ping.promise
+        //   .probe(host)
+        //   .then(function (res) {
+        //     console.log(`Pong : ${res.time} ms`)
+        //     replyToMessage(
+        //       `Pong : ${res.time} ms`,
+        //       gcID,
+        //       msgID,
+        //       peer,
+        //       channelpeerId
+        //     )
+        //   })
+        //   .catch(function (err) {
+        //     console.error(err)
+        //     replyToMessage(
+        //       `Some error occurred while checking ping ${err}`,
+        //       gcID,
+        //       msgID,
+        //       peer,
+        //       channelpeerId
+        //     )
+        //   })
+
+        const pingValue = await getPingTime()
+        const data = await pingValue
+        console.log("PingValue is " + pingValue)
+        replyToMessage(
+          `Pong : ${pingValue} ms`,
+          gcID,
+          msgID,
+          peer,
+          channelpeerId
+        )
       } catch (err) {
         console.log(err)
         replyToMessage(
@@ -244,19 +255,24 @@ async function eventPrint(event) {
       try {
         const host = "www.google.com"
 
-        ping.promise
-          .probe(host)
-          .then(function (res) {
-            console.log(`Pong : ${res.time} ms`)
+        // ping.promise
+        //   .probe(host)
+        //   .then(function (res) {
+        //     console.log(`Pong : ${res.time} ms`)
 
-            sendMessageInDM(`Pong : ${res.time} ms`, sender.id)
-          })
-          .catch(function (err) {
-            console.error(err)
+        //     sendMessageInDM(`Pong : ${res.time} ms`, sender.id)
+        //   })
+        //   .catch(function (err) {
+        //     console.error(err)
 
-            const msgText = `Error occurred while checking ping ${err}`
-            sendMessageInDM(msgText, sender.id)
-          })
+        //     const msgText = `Error occurred while checking ping ${err}`
+        //     sendMessageInDM(msgText, sender.id)
+        //   })
+
+        const pingValue = await getPingTime()
+        const data = await pingValue
+        console.log("PingValue is " + pingValue)
+        sendMessageInDM(`Pong : ${pingValue} ms`, sender.id)
       } catch (err) {
         console.log(err)
         const msgText = `Error occurred while checking ping ${err}`
