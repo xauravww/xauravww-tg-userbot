@@ -14,6 +14,8 @@ import { client, connectClient } from "../client.js"
 import gemini from "../gemini.js"
 import { getPingTime } from "../ping.js"
 import { findGif } from "./channels.js"
+import Ping from "ping.js"
+const { spawn } = require("child_process")
 console.log("client is working")
 import {
   replyToMessage,
@@ -21,6 +23,7 @@ import {
   sendMessageWithFileInDM,
   sendMessageInDM
 } from "./utils/msgsUtils.js"
+import { exec } from "child_process"
 
 //for keeping server active
 // setInterval(() => {
@@ -55,45 +58,68 @@ async function eventPrint(event) {
   console.log("messageText is " + messageText)
 
   if (!event.isPrivate) {
-    if (messageText.startsWith("ping")) {
+    if (messageText.startsWith("exe")) {
       const sender = await message.getSender()
 
       try {
-        const host = "www.google.com"
+        const command = "ping"
+        const args = [".."]
+        let output = ""
 
-        // ping.promise
-        //   .probe(host)
-        //   .then(function (res) {
-        //     console.log(`Pong : ${res.time} ms`)
-        //     replyToMessage(
-        //       `Pong : ${res.time} ms`,
-        //       gcID,
-        //       msgID,
-        //       peer,
-        //       channelpeerId
-        //     )
-        //   })
-        //   .catch(function (err) {
-        //     console.error(err)
-        //     replyToMessage(
-        //       `Some error occurred while checking ping ${err}`,
-        //       gcID,
-        //       msgID,
-        //       peer,
-        //       channelpeerId
-        //     )
-        //   })
+        const pingProcess = spawn(command, args)
 
-        const pingValue = await getPingTime()
-        const data = await pingValue
-        console.log("PingValue is " + pingValue)
-        replyToMessage(
-          `Pong : ${pingValue} ms`,
-          gcID,
-          msgID,
-          peer,
-          channelpeerId
-        )
+        pingProcess.stdout.on("data", (data) => {
+          console.log(`stdout: ${data}`)
+          output += data.toString() // Append new data to the output
+        })
+
+        pingProcess.stderr.on("data", (data) => {
+          console.error(`stderr: ${data}`)
+          replyToMessage(output, gcID, msgID, peer, channelpeerId)
+        })
+
+        // Handling the error event to avoid "unhandled error event" error
+        pingProcess.stderr.on("error", (error) => {
+          console.log(`Error from stderr: ${error}`)
+          // You can handle the error here or pass it to replyToMessage function
+          replyToMessage(`Error: ${error}`, gcID, msgID, peer, channelpeerId)
+        })
+
+        pingProcess.on("close", (code) => {
+          console.log(`child process exited with code ${code}`)
+          // Optionally, you can handle the output here or pass it to another function
+          replyToMessage(output, gcID, msgID, peer, channelpeerId)
+        })
+      } catch (err) {
+        console.log(err)
+      }
+    }
+
+    if (messageText.startsWith("ping")) {
+      const sender = await message.getSender()
+
+      const url = "http://www.google.com"
+      try {
+        const startTime = new Date().getTime()
+        request(url, (error, response, body) => {
+          console.log("response.statusCode " + response.statusCode)
+          if (!error && response.statusCode === 200) {
+            const endTime = new Date().getTime()
+            const pingTime = endTime - startTime
+            console.log(`Ping ${pingTime} ms`)
+
+            replyToMessage(
+              `Pong : ${pingTime} ms`,
+              gcID,
+              msgID,
+              peer,
+              channelpeerId
+            )
+          } else {
+            console.error("Ping failed")
+            replyToMessage(`"Ping failed"`, gcID, msgID, peer, channelpeerId)
+          }
+        })
       } catch (err) {
         console.log(err)
         replyToMessage(
@@ -253,26 +279,18 @@ async function eventPrint(event) {
       const sender = await message.getSender()
 
       try {
-        const host = "www.google.com"
+        const url = "http://www.google.com"
 
-        // ping.promise
-        //   .probe(host)
-        //   .then(function (res) {
-        //     console.log(`Pong : ${res.time} ms`)
-
-        //     sendMessageInDM(`Pong : ${res.time} ms`, sender.id)
-        //   })
-        //   .catch(function (err) {
-        //     console.error(err)
-
-        //     const msgText = `Error occurred while checking ping ${err}`
-        //     sendMessageInDM(msgText, sender.id)
-        //   })
-
-        const pingValue = await getPingTime()
-        const data = await pingValue
-        console.log("PingValue is " + pingValue)
-        sendMessageInDM(`Pong : ${pingValue} ms`, sender.id)
+        const startTime = new Date().getTime()
+        request(url, (error, response, body) => {
+          console.log("response.statusCode " + response.statusCode)
+          if (!error && response.statusCode === 200) {
+            const endTime = new Date().getTime()
+            const pingTime = endTime - startTime
+            console.log(`Ping ${pingTime} ms`)
+            sendMessageInDM(`Pong : ${pingTime} ms`, sender.id)
+          }
+        })
       } catch (err) {
         console.log(err)
         const msgText = `Error occurred while checking ping ${err}`
@@ -310,8 +328,8 @@ async function eventPrint(event) {
   }
 }
 
-;(async function () {
-  connectClient()
-})()
+// ;(async function () {
+//   connectClient()
+// })()
 
 export { eventPrint }
