@@ -15,7 +15,6 @@ import gemini from "../gemini.js"
 
 import { findGif } from "./channels.js"
 
-const { spawn } = require("child_process")
 console.log("client is working")
 import {
   replyToMessage,
@@ -56,16 +55,17 @@ async function eventPrint(event) {
 
       const url = "http://www.google.com"
       try {
-        const startTime = new Date().getTime()
+        const startTime = Date.now()
+        console.log("Starting time is " + startTime)
         request(url, (error, response, body) => {
           console.log("response.statusCode " + response.statusCode)
+
           if (!error && response.statusCode === 200) {
-            const endTime = new Date().getTime()
-            const pingTime = endTime - startTime
-            console.log(`Ping ${pingTime} ms`)
+            const pingTime = Date.now() - startTime
+            console.log(`Ping ${pingTime / 1000} ms`)
 
             replyToMessage(
-              `Pong : ${pingTime} ms`,
+              `Pong : ${pingTime / 1000} ms`,
               gcID,
               msgID,
               peer,
@@ -237,14 +237,13 @@ async function eventPrint(event) {
       try {
         const url = "http://www.google.com"
 
-        const startTime = new Date().getTime()
+        const startTime = Date.now()
         request(url, (error, response, body) => {
           console.log("response.statusCode " + response.statusCode)
           if (!error && response.statusCode === 200) {
-            const endTime = new Date().getTime()
-            const pingTime = endTime - startTime
-            console.log(`Ping ${pingTime} ms`)
-            sendMessageInDM(`Pong : ${pingTime} ms`, sender.id)
+            const pingTime = Date.now() - startTime
+            console.log(`Ping ${pingTime / 1000} ms`)
+            sendMessageInDM(`Pong : ${pingTime / 1000} ms`, sender.id)
           }
         })
       } catch (err) {
