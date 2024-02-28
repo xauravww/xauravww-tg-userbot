@@ -9,18 +9,21 @@ const { Api, TelegramClient } = require("telegram")
 
 const { NewMessage } = require("telegram/events")
 
-import { client, connectClient } from "../client.js"
+import { client, connectClient, startSeconds } from "../client.js"
 
 import gemini from "../gemini.js"
 
 import { findGif } from "./channels.js"
+
+import { mp3Downloader } from "./yt2mp3.js"
 
 console.log("client is working")
 import {
   replyToMessage,
   replyToMessageWithFiles,
   sendMessageWithFileInDM,
-  sendMessageInDM
+  sendMessageInDM,
+  countUptimeServer
 } from "./utils/msgsUtils.js"
 
 async function eventPrint(event) {
@@ -53,6 +56,8 @@ async function eventPrint(event) {
     if (messageText.startsWith("ping")) {
       const sender = await message.getSender()
 
+      const upTimeMsg = countUptimeServer(startSeconds)
+      console.log("uptime msg is " + upTimeMsg)
       const url = "http://www.google.com"
       try {
         const startTime = Date.now()
@@ -65,7 +70,7 @@ async function eventPrint(event) {
             console.log(`Ping ${pingTime / 1000} ms`)
 
             replyToMessage(
-              `Pong : ${pingTime / 1000} ms`,
+              `Pong : ${pingTime / 1000} ms \n${upTimeMsg}`,
               gcID,
               msgID,
               peer,
@@ -223,6 +228,31 @@ async function eventPrint(event) {
         console.log("Pattern not matched")
       }
     }
+
+    // read message
+    if (messageText.startsWith("mp3")) {
+      const sender = await message.getSender()
+      const inputString = messageText.replace("mp3 ", "")
+      try {
+        mp3Downloader(inputString).then((data) => {
+          console.log(data)
+          const senderId = sender.id
+          const files = path.resolve("./file.mp3")
+
+          sendMessageInDM(`Sbr kro thoda mp3 file aa hi rhi hogi , Rasste mein h..`, senderId)
+          sendMessageWithFileInDM(`Ye le teri mp3`, files, senderId)
+          replyToMessage(
+            `Pirasannal mess dekho 🥺 bhej diya maine mp3`,
+            gcID,
+            msgID,
+            peer,
+            channelpeerId
+          )
+        })
+      } catch (err) {
+        console.log(err)
+      }
+    }
   }
 
   if (event.isPrivate) {
@@ -230,10 +260,26 @@ async function eventPrint(event) {
     console.log(message.senderId)
 
     // read message
+    if (messageText.startsWith("mp3")) {
+      const sender = await message.getSender()
+      const inputString = messageText.replace("mp3 ", "")
+      try {
+        mp3Downloader(inputString).then((data) => {
+          console.log(data)
+          const senderId = sender.id
+          const files = path.resolve("./file.mp3")
+          sendMessageInDM(files, senderId)
+          sendMessageWithFileInDM(`Ye le teri mp3`, files, senderId)
+          // replyToMessageWithFiles(`ye le tera mp3`, gcID, msgID, channelpeerId)
+        })
+      } catch (err) {
+        console.log(err)
+      }
+    }
 
     if (messageText.startsWith("ping")) {
       const sender = await message.getSender()
-
+      const upTimeMsg = countUptimeServer(startSeconds)
       try {
         const url = "http://www.google.com"
 
@@ -243,7 +289,10 @@ async function eventPrint(event) {
           if (!error && response.statusCode === 200) {
             const pingTime = Date.now() - startTime
             console.log(`Ping ${pingTime / 1000} ms`)
-            sendMessageInDM(`Pong : ${pingTime / 1000} ms`, sender.id)
+            sendMessageInDM(
+              `Pong : ${pingTime / 1000} ms \n${upTimeMsg}`,
+              sender.id
+            )
           }
         })
       } catch (err) {

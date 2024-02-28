@@ -1,3 +1,4 @@
+import { exec } from "child_process"
 import { createRequire } from "module"
 const require = createRequire(import.meta.url)
 
@@ -18,6 +19,11 @@ console.log("API KEY is " + process.env.API_KEY)
 console.log("API Hash is " + process.env.API_HASH)
 console.log("Session is " + process.env.SESSION_STRING)
 // Connect the client once at the start of your application
+
+//for uptime
+
+const startSeconds = Date.now() / 1000
+
 client
   .connect()
   .then((data) => {
@@ -42,4 +48,4 @@ async function connectClient() {
   // console.log(client.session.save())
 }
 
-export { client, connectClient }
+export { client, connectClient, startSeconds }

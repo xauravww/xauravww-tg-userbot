@@ -63,14 +63,15 @@ async function replyToMessageWithFiles(
   gcID,
   msgID,
   peer,
-  channelpeerId
+  channelpeerId,
+  files = path.resolve("./output.mp4")
 ) {
   console.log("msgID", msgID)
   console.log("gcID", gcID)
   console.log("msgText", msgText)
   console.log("peer", peer)
   console.log("channelpeerId", channelpeerId)
-  const files = path.resolve("./output.mp4")
+  // const files = path.resolve("./output.mp4")
   console.log(files)
   if (!client.is_connected) {
     // If not connected, connect to the client
@@ -149,10 +150,26 @@ async function sendMessageWithFileInDM(msgText, file, senderId) {
   })
 }
 
+function countUptimeServer(startSeconds) {
+  const startMinutes = startSeconds / 60
+  const startHour = startMinutes / 60
+
+  const endSeconds = Date.now() / 1000 - startSeconds
+  const endMinutes = endSeconds / 60
+  const endHour = endMinutes / 60
+  const DaysElapsed = endHour / 24
+
+  const upTimeString = `Uptime: ${Math.floor(DaysElapsed)} Days ${Math.floor(
+    endHour % 24
+  )} Hr ${Math.floor(endMinutes % 60)} Min ${Math.floor(endSeconds % 60)} Sec`
+
+  return upTimeString
+}
+
 export {
   replyToMessage,
   replyToMessageWithFiles,
   sendMessageInDM,
   sendMessageWithFileInDM,
- 
+  countUptimeServer
 }
