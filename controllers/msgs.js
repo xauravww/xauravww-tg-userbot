@@ -4,7 +4,7 @@ const require = createRequire(import.meta.url)
 const path = require("path")
 var request = require("request")
 const fs = require("fs")
-const ping = require("ping")
+
 const { Api, TelegramClient } = require("telegram")
 
 const { NewMessage } = require("telegram/events")
@@ -12,9 +12,9 @@ const { NewMessage } = require("telegram/events")
 import { client, connectClient } from "../client.js"
 
 import gemini from "../gemini.js"
-import { getPingTime } from "../ping.js"
+
 import { findGif } from "./channels.js"
-import Ping from "ping.js"
+
 const { spawn } = require("child_process")
 console.log("client is working")
 import {
@@ -23,13 +23,6 @@ import {
   sendMessageWithFileInDM,
   sendMessageInDM
 } from "./utils/msgsUtils.js"
-import { exec } from "child_process"
-
-//for keeping server active
-// setInterval(() => {
-//   const time = new Date(new Date() - 3600 * 1000 * 3).toISOString()
-//   sendMessageInDM(time, "liveserver")
-// }, 13000)
 
 async function eventPrint(event) {
   // console.log("i am called")
@@ -58,43 +51,6 @@ async function eventPrint(event) {
   console.log("messageText is " + messageText)
 
   if (!event.isPrivate) {
-    if (messageText.startsWith("exe")) {
-      const sender = await message.getSender()
-
-      try {
-        const command = "ping"
-        const args = [".."]
-        let output = ""
-
-        const pingProcess = spawn(command, args)
-
-        pingProcess.stdout.on("data", (data) => {
-          console.log(`stdout: ${data}`)
-          output += data.toString() // Append new data to the output
-        })
-
-        pingProcess.stderr.on("data", (data) => {
-          console.error(`stderr: ${data}`)
-          replyToMessage(output, gcID, msgID, peer, channelpeerId)
-        })
-
-        // Handling the error event to avoid "unhandled error event" error
-        pingProcess.stderr.on("error", (error) => {
-          console.log(`Error from stderr: ${error}`)
-          // You can handle the error here or pass it to replyToMessage function
-          replyToMessage(`Error: ${error}`, gcID, msgID, peer, channelpeerId)
-        })
-
-        pingProcess.on("close", (code) => {
-          console.log(`child process exited with code ${code}`)
-          // Optionally, you can handle the output here or pass it to another function
-          replyToMessage(output, gcID, msgID, peer, channelpeerId)
-        })
-      } catch (err) {
-        console.log(err)
-      }
-    }
-
     if (messageText.startsWith("ping")) {
       const sender = await message.getSender()
 
