@@ -34,7 +34,7 @@ export async function mp3HandlerInGroup(
     mp3Downloader(inputString).then((data) => {
       console.log(data)
       const senderId = sender.id
-      const files = path.resolve("./file.mp3")
+      const files = path.resolve("./controllers/Functions/yt2mp3/output/file.mp3")
 
       sendMessageInDM(
         `Sbr kro thoda mp3 file aa hi rhi hogi , Rasste mein h..`,
