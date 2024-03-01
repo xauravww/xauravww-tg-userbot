@@ -15,7 +15,7 @@ import gemini from "../gemini.js"
 
 import { findGif } from "./channels.js"
 
-import { mp3Downloader } from "./yt2mp3.js"
+import { mp3Downloader } from "./Functions/yt2mp3/yt2mp3.js"
 
 console.log("client is working")
 import {
@@ -23,74 +23,38 @@ import {
   replyToMessageWithFiles,
   sendMessageWithFileInDM,
   sendMessageInDM,
+  editMessageInDM,
   countUptimeServer
 } from "./utils/msgsUtils.js"
+import { pingInGroup, pingInDm } from "./Functions/ping.js"
+import { getUserIdInDm } from "./Functions/userid.js"
+import { stopServer } from "./Functions/crash.js"
+import { mp3HandlerInGroup } from "./Functions/yt2mp3/mp3.js"
 
 async function eventPrint(event) {
-  // console.log("i am called")
   const message = event.message
-  // console.log(message.message.toString().toLowerCase() + "- {ALL}")
-  // Checks if it's a private message (from user or bot)
+
   const msgID = event.message.id
   const msgText = message.text
   const peerId = event.message.peerId.chatId
   const channelpeerId = event.message.peerId.channelId
-  // console.log("channelpeerId " + channelpeerId)
+
   const gcID = peerId != undefined ? peerId : channelpeerId
-  // console.log("gc id is " + gcID)
-  // console.log(message)
+
   const isChannel = peerId != undefined ? true : false
   const peer = message.peerId.chatId
-  // console.log("OUTSIDE THE FUNCTION VARS")
+
   console.log("msgID", msgID)
   console.log("gcID", gcID)
   console.log("msgText", msgText)
   console.log("peer", peer)
   console.log("channelpeerId", channelpeerId)
-  // console.log("channelHash", event)
-
   const messageText = message.text.toString().toLowerCase()
   console.log("messageText is " + messageText)
 
   if (!event.isPrivate) {
     if (messageText.startsWith("ping")) {
-      const sender = await message.getSender()
-
-      const upTimeMsg = countUptimeServer(startSeconds)
-      console.log("uptime msg is " + upTimeMsg)
-      const url = "http://www.google.com"
-      try {
-        const startTime = Date.now()
-        console.log("Starting time is " + startTime)
-        request(url, (error, response, body) => {
-          console.log("response.statusCode " + response.statusCode)
-
-          if (!error && response.statusCode === 200) {
-            const pingTime = Date.now() - startTime
-            console.log(`Ping ${pingTime / 1000} ms`)
-
-            replyToMessage(
-              `Pong : ${pingTime / 1000} ms \n${upTimeMsg}`,
-              gcID,
-              msgID,
-              peer,
-              channelpeerId
-            )
-          } else {
-            console.error("Ping failed")
-            replyToMessage(`"Ping failed"`, gcID, msgID, peer, channelpeerId)
-          }
-        })
-      } catch (err) {
-        console.log(err)
-        replyToMessage(
-          `Some error occurred while checking ping ${err}`,
-          gcID,
-          msgID,
-          peer,
-          channelpeerId
-        )
-      }
+      pingInGroup(message, gcID, msgID, peer, channelpeerId)
     }
 
     if (messageText.startsWith("dp")) {
@@ -230,28 +194,42 @@ async function eventPrint(event) {
     }
 
     // read message
-    if (messageText.startsWith("mp3")) {
-      const sender = await message.getSender()
-      const inputString = messageText.replace("mp3 ", "")
-      try {
-        mp3Downloader(inputString).then((data) => {
-          console.log(data)
-          const senderId = sender.id
-          const files = path.resolve("./file.mp3")
+    // if (messageText.startsWith("mp3")) {
+    //   const sender = await message.getSender()
+    //   const inputString = messageText.replace("mp3 ", "")
+    //   replyToMessage(
+    //     `Thoda sbr kro na File aapko send ho jaayegi `,
+    //     gcID,
+    //     msgID,
+    //     peer,
+    //     channelpeerId
+    //   )
+    //   try {
+    //     mp3Downloader(inputString).then((data) => {
+    //       console.log(data)
+    //       const senderId = sender.id
+    //       const files = path.resolve("./file.mp3")
 
-          sendMessageInDM(`Sbr kro thoda mp3 file aa hi rhi hogi , Rasste mein h..`, senderId)
-          sendMessageWithFileInDM(`Ye le teri mp3`, files, senderId)
-          replyToMessage(
-            `Pirasannal mess dekho 🥺 bhej diya maine mp3`,
-            gcID,
-            msgID,
-            peer,
-            channelpeerId
-          )
-        })
-      } catch (err) {
-        console.log(err)
-      }
+    //       sendMessageInDM(
+    //         `Sbr kro thoda mp3 file aa hi rhi hogi , Rasste mein h..`,
+    //         senderId
+    //       )
+    //       sendMessageWithFileInDM(`Ye le teri mp3`, files, senderId)
+    //       replyToMessage(
+    //         `Pirasannal mess dekho 🥺 bhej diya maine mp3`,
+    //         gcID,
+    //         msgID,
+    //         peer,
+    //         channelpeerId
+    //       )
+    //     })
+    //   } catch (err) {
+    //     console.log(err)
+    //   }
+    // }
+
+    if (messageText.startsWith("mp3")) {
+      mp3HandlerInGroup(message, messageText, gcID, msgID, peer, channelpeerId)
     }
   }
 
@@ -268,8 +246,28 @@ async function eventPrint(event) {
           console.log(data)
           const senderId = sender.id
           const files = path.resolve("./file.mp3")
-          sendMessageInDM(files, senderId)
+          const dmMsgData = sendMessageInDM(
+            `Thoda sbr kro raaste me h .. aa rhi hogi`,
+            senderId
+          )
+          let editId = 3323223423423
+          dmMsgData.then((message) => {
+            editId = message.id
+            console.log("editid is", editId)
+          })
+
+          const editedMsg = editMessageInDM(
+            "Lo sbr khtm huaa ab...",
+            senderId,
+            editId
+          )
+          console.log(
+            editedMsg.then((data) => {
+              console.log("This is editedmsg" + JSON.stringify(data))
+            })
+          )
           sendMessageWithFileInDM(`Ye le teri mp3`, files, senderId)
+
           // replyToMessageWithFiles(`ye le tera mp3`, gcID, msgID, channelpeerId)
         })
       } catch (err) {
@@ -278,46 +276,15 @@ async function eventPrint(event) {
     }
 
     if (messageText.startsWith("ping")) {
-      const sender = await message.getSender()
-      const upTimeMsg = countUptimeServer(startSeconds)
-      try {
-        const url = "http://www.google.com"
-
-        const startTime = Date.now()
-        request(url, (error, response, body) => {
-          console.log("response.statusCode " + response.statusCode)
-          if (!error && response.statusCode === 200) {
-            const pingTime = Date.now() - startTime
-            console.log(`Ping ${pingTime / 1000} ms`)
-            sendMessageInDM(
-              `Pong : ${pingTime / 1000} ms \n${upTimeMsg}`,
-              sender.id
-            )
-          }
-        })
-      } catch (err) {
-        console.log(err)
-        const msgText = `Error occurred while checking ping ${err}`
-        sendMessageInDM(msgText, sender.id)
-      }
+      pingInDm(message)
     }
 
     if (messageText == "userid") {
-      const sender = await message.getSender()
-
-      const msgText = `hi your userid is ${message.senderId}`
-      sendMessageInDM(msgText, sender.id)
+      getUserIdInDm(message)
     }
 
     if (messageText.startsWith("stop")) {
-      const sender = await message.getSender()
-
-      const stopParams = message.text.toLowerCase().replace("stop ", "")
-      console.log("stopParams " + stopParams)
-      const msgText = `stopping the server`
-      sendMessageInDM(stopParams, sender.id)
-
-      if (stopParams == process.env.CRASH_PASS) process.exit(0)
+      stopServer(message)
     }
     if (messageText.startsWith("gif")) {
       // console.log("Entered this random gif fn")

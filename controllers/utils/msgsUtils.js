@@ -138,7 +138,17 @@ async function replyToMessageWithFiles(
 }
 
 async function sendMessageInDM(msgText, senderId) {
-  await client.sendMessage(senderId, {
+  return await client.sendMessage(senderId, {
+    message: msgText
+  })
+}
+async function editMessageInDM(msgText, senderId, msgID) {
+  return new Api.messages.EditMessage({
+    peer: new Api.InputPeerUser({
+      userId: senderId
+    }),
+    id: msgID,
+
     message: msgText
   })
 }
@@ -170,6 +180,7 @@ export {
   replyToMessage,
   replyToMessageWithFiles,
   sendMessageInDM,
+  editMessageInDM,
   sendMessageWithFileInDM,
   countUptimeServer
 }
