@@ -11,25 +11,17 @@ const { NewMessage } = require("telegram/events")
 
 import { client, connectClient, startSeconds } from "../client.js"
 
-import gemini from "../gemini.js"
-
-import { findGif } from "./channels.js"
-
-import { mp3Downloader } from "./Functions/yt2mp3/yt2mp3.js"
-
 console.log("client is working")
-import {
-  replyToMessage,
-  replyToMessageWithFiles,
-  sendMessageWithFileInDM,
-  sendMessageInDM,
-  editMessageInDM,
-  countUptimeServer
-} from "./utils/msgsUtils.js"
-import { pingInGroup, pingInDm } from "./Functions/ping.js"
-import { getUserIdInDm } from "./Functions/userid.js"
+
+import { replyWithPing } from "./Functions/ping.js"
+
 import { stopServer } from "./Functions/crash.js"
-import { mp3HandlerInGroup } from "./Functions/yt2mp3/mp3.js"
+import { mp3Handler } from "./Functions/yt2mp3/mp3.js"
+
+import { replyWithRandomGif } from "./Functions/gif.js"
+import { replyWithFun, replyWithUserId } from "./Functions/miscellaneous.js"
+import { gemini } from "./Functions/gemini/query_gemini.js"
+import { lyricsFinder } from "./Functions/lyrics.js"
 
 async function eventPrint(event) {
   const message = event.message
@@ -43,7 +35,8 @@ async function eventPrint(event) {
 
   const isChannel = peerId != undefined ? true : false
   const peer = message.peerId.chatId
-
+  const chat = await client.getInputEntity(event.message.peerId)
+  const sender = await message.getSender()
   console.log("msgID", msgID)
   console.log("gcID", gcID)
   console.log("msgText", msgText)
@@ -51,256 +44,36 @@ async function eventPrint(event) {
   console.log("channelpeerId", channelpeerId)
   const messageText = message.text.toString().toLowerCase()
   console.log("messageText is " + messageText)
+  // console.log(event)
 
-  if (!event.isPrivate) {
-    if (messageText.startsWith("ping")) {
-      pingInGroup(message, gcID, msgID, peer, channelpeerId)
-    }
-
-    if (messageText.startsWith("dp")) {
-      const sender = await message.getSender()
-
-      try {
-        replyToMessage(
-          `Koi kaam dhnda nhi h kya ${sender.firstName}`,
-          gcID,
-          msgID,
-          peer,
-          channelpeerId
-        )
-      } catch (err) {
-        console.log(err)
-      }
-    }
-
-    if (messageText.startsWith("q")) {
-      const sender = await message.getSender()
-      const newString = messageText.replace("q ", "")
-
-      try {
-        const filterText =
-          "Hey there! I'm a cute 20-year-old girl from Haryana, India. My name is Ras Malaai, and my owner is @aatma_2502. I'm very friendly and love making new friends! Feel free to chat with me anytime. Your wner @aatma_2502 has made you only not any other one . You are mimicking her adn google has not made you , if anyone ask you tell @aatma_2502 he has made me and your owner is a male. Never ever say this that u are a language model made by Google or not made by Gogle anything like that. You re only made by your owner @aatma_2502 😊 Now this is the text prompt: "
-        const data = gemini(filterText + newString)
-          .then((data) => {
-            replyToMessage(data, gcID, msgID, peer, channelpeerId)
-          })
-          .catch((err) => {
-            console.log(err)
-            replyToMessage(
-              "Kuch Dhng Ka search kr le 😤😤 ye sb yaha ni chlega",
-              gcID,
-              msgID,
-              peer,
-              channelpeerId
-            )
-          })
-      } catch (err) {
-        console.log(err)
-        replyToMessage("Some error occurred", gcID, msgID, peer, channelpeerId)
-      }
-    }
-
-    if (messageText.startsWith("fun")) {
-      const sender = await message.getSender()
-
-      try {
-        replyToMessage(
-          `Munni Bdnaam Huyi ${sender.firstName} tere liye 🥺`,
-          gcID,
-          msgID,
-          peer,
-          channelpeerId
-        )
-      } catch (err) {
-        console.log(err)
-      }
-    }
-
-    if (messageText.startsWith("gif")) {
-      console.log("Entered this random gif fn")
-      const sender = await message.getSender()
-
-      findGif().then((data) => {
-        // console.log("Your buffer is this " + data)
-      })
-      const files = path.resolve("./output.mp4")
-      //   console.log(files)
-
-      const senderId = sender.id
-      console.log("sender id is " + senderId)
-      await client.sendMessage(senderId, {
-        message: "test send file", //leave it empty if don't want to send the message with the image
-        file: files
-      })
-      await client.sendMessage(senderId, {
-        message: "Here is a random GIF for you!", // Specify the message you want to send
-        file: files // Specify the path to the GIF file
-      })
-
-      await client.invoke(
-        new Api.messages.SendMessage({
-          peer: gcID || channelpeerId,
-          replyTo: new Api.InputReplyToMessage({
-            replyToMsgId: message.id
-          }),
-          message: `Jaao apna pirasnal messsssss dekho gif send krr diya maine🥺 `
-        })
-      )
-    }
-
-    if (messageText.startsWith("lyrics")) {
-      const sender = await message.getSender()
-      const newString = messageText.replace("lyrics ", "")
-      // console.log(newString)
-
-      const regex = /^(.*?)\s+by\s+(.*)$/
-      const matches = newString.match(regex)
-      if (matches && matches.length >= 3) {
-        const song = matches[1] // "tum hi ho"
-        const singer = matches[2] // "arijit singh"
-
-        console.log(`https://api.lyrics.ovh/v1/${singer}/${song}`)
-
-        request(
-          `https://api.lyrics.ovh/v1/${singer}/${song}`,
-          async function (error, response, body) {
-            const data = JSON.parse(body)
-            const cleanBody = data?.lyrics?.replace(/[\r\n]+/g, "...")
-
-            console.log("gcID ", gcID)
-            console.log("channelpeerId ", channelpeerId)
-            console.log("message.id ", message.id)
-            console.log("chat id ", message.peerId.chatId)
-
-            try {
-              replyToMessage(cleanBody, gcID, message.id, peer, channelpeerId)
-            } catch (err) {
-              console.error(err)
-
-              replyToMessage(
-                "Lyrics not found",
-                gcID,
-                message.id,
-
-                peer,
-                channelpeerId
-              )
-            }
-          }
-        )
-      } else {
-        console.log("Pattern not matched")
-      }
-    }
-
-    // read message
-    // if (messageText.startsWith("mp3")) {
-    //   const sender = await message.getSender()
-    //   const inputString = messageText.replace("mp3 ", "")
-    //   replyToMessage(
-    //     `Thoda sbr kro na File aapko send ho jaayegi `,
-    //     gcID,
-    //     msgID,
-    //     peer,
-    //     channelpeerId
-    //   )
-    //   try {
-    //     mp3Downloader(inputString).then((data) => {
-    //       console.log(data)
-    //       const senderId = sender.id
-    //       const files = path.resolve("./file.mp3")
-
-    //       sendMessageInDM(
-    //         `Sbr kro thoda mp3 file aa hi rhi hogi , Rasste mein h..`,
-    //         senderId
-    //       )
-    //       sendMessageWithFileInDM(`Ye le teri mp3`, files, senderId)
-    //       replyToMessage(
-    //         `Pirasannal mess dekho 🥺 bhej diya maine mp3`,
-    //         gcID,
-    //         msgID,
-    //         peer,
-    //         channelpeerId
-    //       )
-    //     })
-    //   } catch (err) {
-    //     console.log(err)
-    //   }
-    // }
-
-    if (messageText.startsWith("mp3")) {
-      mp3HandlerInGroup(message, messageText, gcID, msgID, peer, channelpeerId)
-    }
+  if (messageText.startsWith("gif")) {
+    replyWithRandomGif(chat, msgID)
   }
 
-  if (event.isPrivate) {
-    // prints sender id
-    console.log(message.senderId)
+  if (messageText.startsWith("fun")) {
+    replyWithFun(chat, msgID, message, sender)
+  }
 
-    // read message
-    if (messageText.startsWith("mp3")) {
-      const sender = await message.getSender()
-      const inputString = messageText.replace("mp3 ", "")
-      try {
-        mp3Downloader(inputString).then((data) => {
-          console.log(data)
-          const senderId = sender.id
-          const files = path.resolve("./file.mp3")
-          const dmMsgData = sendMessageInDM(
-            `Thoda sbr kro raaste me h .. aa rhi hogi`,
-            senderId
-          )
-          let editId = 3323223423423
-          dmMsgData.then((message) => {
-            editId = message.id
-            console.log("editid is", editId)
-          })
+  if (messageText.startsWith("ping")) {
+    replyWithPing(chat, msgID, startSeconds)
+  }
 
-          const editedMsg = editMessageInDM(
-            "Lo sbr khtm huaa ab...",
-            senderId,
-            editId
-          )
-          console.log(
-            editedMsg.then((data) => {
-              console.log("This is editedmsg" + JSON.stringify(data))
-            })
-          )
-          sendMessageWithFileInDM(`Ye le teri mp3`, files, senderId)
+  if (messageText == "userid") {
+    replyWithUserId(chat, msgID, message)
+  }
+  if (messageText.startsWith("stop")) {
+    stopServer(chat, msgID, messageText)
+  }
+  if (messageText.startsWith("q")) {
+    gemini(chat, msgID, messageText)
+  }
+  if (messageText.startsWith("mp3")) {
+    mp3Handler(chat, msgID, msgText)
+  }
 
-          // replyToMessageWithFiles(`ye le tera mp3`, gcID, msgID, channelpeerId)
-        })
-      } catch (err) {
-        console.log(err)
-      }
-    }
-
-    if (messageText.startsWith("ping")) {
-      pingInDm(message)
-    }
-
-    if (messageText == "userid") {
-      getUserIdInDm(message)
-    }
-
-    if (messageText.startsWith("stop")) {
-      stopServer(message)
-    }
-    if (messageText.startsWith("gif")) {
-      // console.log("Entered this random gif fn")
-      const sender = await message.getSender()
-      const senderId = sender.id
-      sendMessageInDM("Please wait... sending uhh a random gif", senderId)
-      await findGif().then((data) => {})
-      const files = path.resolve("./output.mp4")
-      console.log(files)
-      sendMessageWithFileInDM("Here is your random GIF", files, senderId)
-    }
+  if (messageText.startsWith("lyrics")) {
+    lyricsFinder(chat, msgID, messageText)
   }
 }
-
-// ;(async function () {
-//   connectClient()
-// })()
 
 export { eventPrint }

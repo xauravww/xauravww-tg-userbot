@@ -7,6 +7,7 @@
     "fluent-ffmpeg": "^2.1.2",
     "input": "^1.0.1",
     "network-speed": "^2.1.1",
+    "node-telegram-bot-api": "^0.64.0",
     "request": "^2.88.2",
     "telegram": "^2.19.10",
     "youtube-search-api": "^1.2.1",
