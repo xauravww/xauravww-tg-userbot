@@ -5,10 +5,10 @@ const require = createRequire(import.meta.url)
 const ffmpeg = require("fluent-ffmpeg")
 const fs = require("fs")
 const ytdl = require("ytdl-core")
-
+import { client } from "../../../client.js"
 const youtubesearchapi = require("youtube-search-api")
 
-function mp3Downloader(inputString) {
+function mp3Downloader(inputString, msgToEditId, chat) {
   try {
     return new Promise((res, rej) => {
       youtubesearchapi
@@ -21,18 +21,19 @@ function mp3Downloader(inputString) {
           infoVideo.then((info) => {
             // console.log(info.videoDetails.title)
             const videoTitle = info.videoDetails.title
+
+            client.editMessage(chat, {
+              message: msgToEditId,
+              text: `Downloading this video : \n${videoTitle}`
+            })
+
             let audioFormats = ytdl.filterFormats(info.formats, "audioandvideo")
             console.log("Formats with only audio: " + audioFormats)
-            // audioFormats.map((item) => {
-            //   console.log(item)
-            // })
+          
             const format = ytdl.chooseFormat(info.formats, { quality: "18" })
 
             const outputFilePath = `./controllers/Functions/yt2mp3/output/video.mp4`
 
-            // if (!fs.existsSync(videoPath)) {
-            //   return
-            // }
 
             if (outputFilePath) {
               const outputStream = fs.createWriteStream(outputFilePath)
@@ -41,8 +42,16 @@ function mp3Downloader(inputString) {
 
               outputStream.on("finish", () => {
                 console.log(`Finished downloading: ${outputFilePath}`)
-                convertToMP3()
+                client.editMessage(chat, {
+                  message: msgToEditId,
+                  text: `Finished downloading mp4 , now converting to mp3 ...`
+                })
+                convertToMP3(msgToEditId, chat)
                   .then(() => {
+                    client.editMessage(chat, {
+                      message: msgToEditId,
+                      text: `Now sending you the file.mp3...wait...`
+                    })
                     res(videoTitle)
                   })
                   .catch((err) => {
@@ -71,7 +80,7 @@ function mp3Downloader(inputString) {
   }
 }
 
-function convertToMP3() {
+function convertToMP3(msgToEditId, chat) {
   try {
     return new Promise((res, rej) => {
       const video = path.resolve(
@@ -86,11 +95,17 @@ function convertToMP3() {
           rej(err.message)
         })
         .on("progress", (progress) => {
-          // console.log(`Conversion progress: ${JSON.stringify(progress)}%`)
-          console.log(`Conversion progress: ${progress.timemark}`)
+          client.editMessage(chat, {
+            message: msgToEditId,
+            text: `Conversion progress: ${progress.timemark}`
+          })
         })
         .on("end", () => {
           console.log("Conversion completed")
+          client.editMessage(chat, {
+            message: msgToEditId,
+            text: `Conversion completed....Wait...`
+          })
           res("Conversion completed")
         })
     }).catch((err) => {
