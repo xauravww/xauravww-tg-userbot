@@ -30,7 +30,7 @@ export async function replyWithPing(chat, msgID, startSeconds) {
       }
     })
   } catch (err) {
-    console.log(err)
+ 
     client.sendMessage(chat, {
       message: `Some error occured while pinging`,
       replyTo: msgID

@@ -54,7 +54,7 @@ async function runChat(inputText) {
 
   const result = await chat.sendMessage(inputText)
   const response = result.response
-  console.log(response.text())
+ 
 
   return response.text()
 }

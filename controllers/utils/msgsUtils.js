@@ -11,11 +11,11 @@ import { client, connectClient } from "../../client.js"
 const path = require("path")
 
 async function replyToMessage(msgText, gcID, msgID, peer, channelpeerId) {
-  console.log("msgID", msgID)
-  console.log("gcID", gcID)
-  console.log("msgText", msgText)
-  console.log("peer", peer)
-  console.log("channelpeerId", channelpeerId)
+ 
+ 
+ 
+ 
+ 
 
   if (!client.is_connected) {
     // If not connected, connect to the client
@@ -36,7 +36,7 @@ async function replyToMessage(msgText, gcID, msgID, peer, channelpeerId) {
       )
       res(data)
     } else {
-      console.log("Channelpeerid undefined")
+ 
       try {
         const data = await client.invoke(
           new Api.messages.SendMessage({
@@ -52,7 +52,7 @@ async function replyToMessage(msgText, gcID, msgID, peer, channelpeerId) {
         )
         res(data)
       } catch (err) {
-        console.log(err)
+ 
       }
     }
   })
@@ -66,13 +66,13 @@ async function replyToMessageWithFiles(
   channelpeerId,
   files = path.resolve("./output.mp4")
 ) {
-  console.log("msgID", msgID)
-  console.log("gcID", gcID)
-  console.log("msgText", msgText)
-  console.log("peer", peer)
-  console.log("channelpeerId", channelpeerId)
+ 
+ 
+ 
+ 
+ 
   // const files = path.resolve("./output.mp4")
-  console.log(files)
+ 
   if (!client.is_connected) {
     // If not connected, connect to the client
     await client.connect()
@@ -103,8 +103,8 @@ async function replyToMessageWithFiles(
       )
       res(data)
     } else {
-      console.log("Channelpeerid undefined")
-      console.log(files)
+ 
+ 
       try {
         const data = await client.invoke(
           new Api.messages.SendMedia({
@@ -131,7 +131,7 @@ async function replyToMessageWithFiles(
         )
         res(data)
       } catch (err) {
-        console.log(err)
+ 
       }
     }
   })

@@ -8,10 +8,10 @@ const fs = require("fs")
 const { Api, TelegramClient } = require("telegram")
 
 const { NewMessage } = require("telegram/events")
-
+const { CallbackQuery } = require("telegram/events/CallbackQuery")
 import { client, connectClient, startSeconds } from "../client.js"
-
-console.log("client is working")
+const { Button } = require("telegram/tl/custom/button")
+ 
 
 import { replyWithPing } from "./Functions/ping.js"
 
@@ -22,7 +22,7 @@ import { replyWithRandomGif } from "./Functions/gif.js"
 import { replyWithFun, replyWithUserId } from "./Functions/miscellaneous.js"
 import { gemini } from "./Functions/gemini/query_gemini.js"
 import { lyricsFinder } from "./Functions/lyrics.js"
-
+import BotClient from "../botclient.js"
 async function eventPrint(event) {
   const message = event.message
 
@@ -37,14 +37,26 @@ async function eventPrint(event) {
   const peer = message.peerId.chatId
   const chat = await client.getInputEntity(event.message.peerId)
   const sender = await message.getSender()
-  console.log("msgID", msgID)
-  console.log("gcID", gcID)
-  console.log("msgText", msgText)
-  console.log("peer", peer)
-  console.log("channelpeerId", channelpeerId)
+ 
+ 
+ 
+ 
+ 
   const messageText = message.text.toString().toLowerCase()
-  console.log("messageText is " + messageText)
-  // console.log(event)
+ 
+ 
+
+  if (messageText.startsWith("t")) {
+    // const dialogs = await client.getDialogs({})
+    // const first = dialogs[0]
+ 
+
+    // dialogs.forEach((item) => {
+ 
+    // })
+
+    client.sendMessage("ras_malaai_bot", { message: "hi" })
+  }
 
   if (messageText.startsWith("gif")) {
     replyWithRandomGif(chat, msgID)
