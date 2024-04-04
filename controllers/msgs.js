@@ -22,7 +22,7 @@ import { replyWithRandomGif } from "./Functions/gif.js"
 import { replyWithFun, replyWithUserId } from "./Functions/miscellaneous.js"
 import { gemini } from "./Functions/gemini/query_gemini.js"
 import { lyricsFinder } from "./Functions/lyrics.js"
-import BotClient from "../botclient.js"
+
 async function eventPrint(event) {
   const message = event.message
 
