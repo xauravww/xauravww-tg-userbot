@@ -2,11 +2,15 @@ import { createRequire } from "module"
 const require = createRequire(import.meta.url)
 
 const { NewMessage } = require("telegram/events")
+import graphApiRouters from "./routers/graph-api.js"
 import "./client.js"
 import { client, connectClient } from "./client.js"
 import { eventPrint } from "./controllers/msgs.js"
 const express = require("express")
 const app = express()
+import bodyParser from "body-parser"
+app.use(bodyParser.json());
+app.use("/",graphApiRouters)
 
 import { job } from "./cron.js"
 job.start()
