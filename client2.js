@@ -23,6 +23,6 @@ const stringSession = new StringSession("") // fill this later with the value fr
  
   })
  
- 
-  await client.sendMessage("me", { message: "Hello!" })
+  const session = client.session.save()
+  await client.sendMessage("me", { message: "session" })
 })()
