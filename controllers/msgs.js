@@ -15,7 +15,7 @@ const { Button } = require("telegram/tl/custom/button");
 import { replyWithPing } from "./Functions/ping.js";
 import { stopServer } from "./Functions/crash.js";
 import { mp3Handler } from "./Functions/yt2mp3/mp3.js";
-import { replyWithRandomGif } from "./Functions/gif.js";
+import { replyWithRandomGif } from "./Functions/gifs.js";
 import { replyWithFun, replyWithUserId ,replyWithAbout } from "./Functions/miscellaneous.js";
 import { gemini } from "./Functions/gemini/query_gemini.js";
 import { lyricsFinder } from "./Functions/lyrics.js";

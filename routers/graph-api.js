@@ -7,7 +7,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const crypto = require("crypto");
 const router = express.Router();
-import {getFromWebhook,postToWebHook} from "../controllers/graph-api.js"
+import {getFromWebhook,postToWebHook} from "../controllers/graph-api-webhook.js"
 
 
 
