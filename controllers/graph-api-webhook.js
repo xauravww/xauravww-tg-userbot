@@ -46,7 +46,7 @@ export async function postToWebHook(req, res) {
 
             if (msgText) {
                 const modifiedMsgText = msgText.replace(/instagram/g, 'ddinstagram');
-                await client.sendMessage(processs.env.TELEGRAM_REELS_CHANNEL_USERNAME, { message: modifiedMsgText });
+                await client.sendMessage(process.env.TELEGRAM_REELS_CHANNEL_USERNAME, { message: modifiedMsgText });
             }
         }
 
