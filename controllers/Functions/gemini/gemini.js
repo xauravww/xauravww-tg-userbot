@@ -11,11 +11,19 @@ const {
   HarmBlockThreshold
 } = require("@google/generative-ai");
 
-const MODEL_NAME = "gemini-pro";
+const MODEL_NAME = "gemini-1.5-pro";
 const API_KEY = process.env.GEMINI_API_KEY;
 
-async function runChat(inputText) {
+// Initialize an object to store chat histories by senderId
+let chatHistories = {};
+
+async function runChat(inputText, senderId) {
   try {
+    // Check if chat history exists for this senderId, otherwise initialize it
+    if (!chatHistories[senderId]) {
+      chatHistories[senderId] = [];
+    }
+
     const genAI = new GoogleGenerativeAI(API_KEY);
     const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
@@ -48,16 +56,35 @@ async function runChat(inputText) {
     const chat = model.startChat({
       generationConfig,
       safetySettings,
-      history: []
+      history: chatHistories[senderId] // Pass the current chat history for this senderId
     });
+
+    // Send user input
+    const userMessage = {
+      role: "user",
+      parts: inputText
+    };
+
+    // Add user message to history for this senderId
+    chatHistories[senderId].push(userMessage);
 
     const result = await chat.sendMessage(inputText);
     const response = result.response;
 
+    // Add model response to history for this senderId
+    const modelMessage = {
+      role: "model",
+      parts: response.text()
+    };
+    chatHistories[senderId].push(modelMessage);
+
     return response.text();
   } catch (error) {
-    console.error("An error occurred:", error);
-    throw error;
+    console.log(error)
+
+    return "Too many requests. Please try again later.";
+
+
   }
 }
 

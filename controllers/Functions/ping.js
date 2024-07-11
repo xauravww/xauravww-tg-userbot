@@ -22,7 +22,7 @@ export async function replyWithPing(chat, msgID, startSeconds) {
         if (!error && response.statusCode === 200) {
           const pingTime = Date.now() - startTime;
           client.sendMessage(chat, {
-            message: `Pong : ${pingTime / 1000} ms \n${upTimeMsg}`,
+            message: `Pong : ${pingTime} ms \n${upTimeMsg}`,
             replyTo: msgID
           });
         } else {

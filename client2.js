@@ -24,5 +24,5 @@ const stringSession = new StringSession("") // fill this later with the value fr
   })
  
   const session = client.session.save()
-  await client.sendMessage("me", { message: "session" })
+  await client.sendMessage("me", { message: `session is \n\n\n\n ${session}` })
 })()

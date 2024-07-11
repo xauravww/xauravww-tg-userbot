@@ -12,9 +12,9 @@ import handleGeminiQuery from "./gemini.js";
 
 
 
-export async function gemini(chat, msgId, messageText) {
+export async function gemini(chat, msgId, messageText,senderId) {
   // Remove the query prefix
-  const newString = messageText.replace("q ", "");
+  const newString = messageText.replace("ask ", "");
 
   try {
     // Inform the user about the search process
@@ -28,7 +28,7 @@ export async function gemini(chat, msgId, messageText) {
     const filterText =process.env.FILTERED_TEXT_GEMINI;
 
     // Handle the Gemini query
-    const data = handleGeminiQuery(filterText + newString)
+    const data = handleGeminiQuery(filterText + newString,senderId)
       .then((data) => {
         // Update the message with the search result
         client.editMessage(chat, {
@@ -39,10 +39,12 @@ export async function gemini(chat, msgId, messageText) {
       })
       .catch((err) => {
         // Inform the user about the error
-        client.sendMessage(chat, {
-          message: "Please perform a valid search. This won't work here. 😤😤",
-          replyTo: msgId
-        });
+        if(msgToBeEditedId && err.code === 429){
+          client.editMessage(chat, {
+            message: msgToBeEditedId,
+            text:"Too may requests, try again after few seconds",
+          });
+        }
       });
   } catch (err) {
     // Inform the user about the error
