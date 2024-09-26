@@ -31,11 +31,17 @@ export async function gemini(chat, msgId, messageText,senderId) {
     const data = handleGeminiQuery(filterText + newString,senderId)
       .then((data) => {
         // Update the message with the search result
+        const resultText = data.toString();
+        const truncatedText = resultText.length > 4096 ? resultText.substring(0, 4093) + "..." : resultText;
+
+        const formattedText = `<pre>${truncatedText}</pre>`;
         client.editMessage(chat, {
           message: msgToBeEditedId,
-          text: data.toString(),
-          replyTo: msgId
+          text: formattedText,
+          replyTo: msgId,
+          parseMode:"html"
         });
+        
       })
       .catch((err) => {
         // Inform the user about the error

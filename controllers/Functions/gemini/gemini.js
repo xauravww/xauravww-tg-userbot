@@ -11,7 +11,7 @@ const {
   HarmBlockThreshold
 } = require("@google/generative-ai");
 
-const MODEL_NAME = "gemini-1.5-pro";
+const MODEL_NAME = "gemini-1.0-pro";
 const API_KEY = process.env.GEMINI_API_KEY;
 
 // Initialize an object to store chat histories by senderId

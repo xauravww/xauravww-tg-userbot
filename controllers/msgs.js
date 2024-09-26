@@ -17,6 +17,7 @@ import { replyWithRandomGif } from "./Functions/gifs.js";
 import { replyWithFun, replyWithUserId ,replyWithAbout } from "./Functions/miscellaneous.js";
 import { gemini } from "./Functions/gemini/query_gemini-api.js";
 import { lyricsFinder } from "./Functions/lyrics.js";
+import { genImage } from "./Functions/image-gen.js";
 
 
 async function eventPrint(event) {
@@ -28,6 +29,7 @@ async function eventPrint(event) {
 
   const chat = await client.getInputEntity(event.message.peerId);
   const sender = await message.getSender();
+// console.log(event)
 
   if(event.message.mentioned){
     gemini(chat, msgID, msgText,message.senderId);
@@ -55,6 +57,10 @@ async function eventPrint(event) {
 
   if (msgText.startsWith("/ask") || msgText.startsWith("ask")) {
     gemini(chat, msgID, msgText);
+  }
+
+  if (msgText.startsWith("/gen") || msgText.startsWith("gen")) {
+    genImage(chat, msgID, msgText);
   }
 
   if (msgText.startsWith("/mp3") || msgText.startsWith("mp3")) {
