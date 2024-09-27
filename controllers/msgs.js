@@ -60,7 +60,7 @@ async function eventPrint(event) {
   }
 
   if (msgText.startsWith("/gen") || msgText.startsWith("gen")) {
-    genImage(chat, msgID, msgText);
+    genImage(sender.id,chat, msgID, msgText);
   }
 
   if (msgText.startsWith("/mp3") || msgText.startsWith("mp3")) {
