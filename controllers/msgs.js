@@ -17,7 +17,7 @@ import { replyWithRandomGif } from "./Functions/gifs.js";
 import { replyWithFun, replyWithUserId ,replyWithAbout } from "./Functions/miscellaneous.js";
 import { gemini } from "./Functions/gemini/query_gemini-api.js";
 import { lyricsFinder } from "./Functions/lyrics.js";
-import { genImage } from "./Functions/image-gen.js";
+import { genImage } from "./Functions/image-gen2.js";
 
 
 async function eventPrint(event) {

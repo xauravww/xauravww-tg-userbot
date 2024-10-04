@@ -23,12 +23,13 @@ function getUserData(userId, key) {
 }
 
 export async function genImage(userId, chat, msgId, message) {
+  console.table(JSON.stringify(userId, chat, msgId, message))
   // Store data for the specific user
   setUserData(userId, 'globalChat', chat);
-  setUserData(userId, 'globalMessage', message.replace(/\/gen/, ""));
+  setUserData(userId, 'globalMessage', message.replace(/\/ben/, ""));
 
   const settings = {
-    model: "sauravtechno/alvdansen-flux-koda",
+    model: "sauravtechno/black-forest-labs-FLUX.1-dev",
   };
 
   try {
