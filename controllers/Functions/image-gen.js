@@ -29,7 +29,7 @@ export async function genImage(userId, chat, msgId, message) {
   setUserData(userId, 'globalMessage', message.replace(/\/ben/, ""));
 
   const settings = {
-    model: "sauravtechno/black-forest-labs-FLUX.1-dev",
+    model: "sauravtechno/alvdansen-flux-koda",
   };
 
   try {

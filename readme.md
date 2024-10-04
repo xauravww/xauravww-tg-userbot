@@ -1,6 +1,6 @@
 # 🌟 @xaurav_assistant_bot 🌟
 
-## Telegram Bot Designed for @saurav_lakhotia's Needs
+## Telegram Bot Designed for @shhhhhfirkoih
 
 Welcome to the official repository of @xaurav_assistant_bot This bot is designed to cater to a variety of tasks and functionalities for Telegram users, whether in group chats, channels, or direct messages.
 
@@ -19,6 +19,8 @@ The bot supports the following commands (case-insensitive):
 7. Stop secret_password: Stop the server (restricted to the owner).
 8. Userid: Get the user's Telegram ID.
 9. About: Get information about the bot.
+10. Gen <prompt> : to generate high quality ai image (not recommended)
+11. Gen2 <prompt> : alternative to Gen cmnd but faster (Recommended for better performance)
 
 ---
 
@@ -33,6 +35,7 @@ The bot supports the following commands (case-insensitive):
 - Lyrics Finder: Searches and provides lyrics for songs, especially popular and foreign ones.
 - Owner Commands: Special commands like "Stop" are restricted to the owner for security.
 - Latency Check: Use the "Ping" command to check the bot's responsiveness and uptime.
+- AI Image Generation: Use the "/gen" or "/gen2" command followed by a prompt to generate an AI image.
 
 ---
 
@@ -73,6 +76,7 @@ Follow these steps to set up and run the bot:
        TELEGRAM_REELS_CHANNEL_USERNAME="username without @ "
        GIFS_CHANNEL_USERNAME="username of channel without @ containing only gifs"
        FILTERED_TEXT_GEMINI="add extra prompt text to apply filters to gemini output"
+       FREE_IMG_GEN_API = "paste endpoint url here"
     
 4. Run the Bot
         node msgs.js

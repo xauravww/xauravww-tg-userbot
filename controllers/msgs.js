@@ -17,7 +17,8 @@ import { replyWithRandomGif } from "./Functions/gifs.js";
 import { replyWithFun, replyWithUserId ,replyWithAbout } from "./Functions/miscellaneous.js";
 import { gemini } from "./Functions/gemini/query_gemini-api.js";
 import { lyricsFinder } from "./Functions/lyrics.js";
-import { genImage } from "./Functions/image-gen2.js";
+import { genImage } from "./Functions/image-gen.js";
+import { genImage2 } from "./Functions/image-gen2.js";
 
 
 async function eventPrint(event) {
@@ -29,10 +30,9 @@ async function eventPrint(event) {
 
   const chat = await client.getInputEntity(event.message.peerId);
   const sender = await message.getSender();
-// console.log(event)
-
-  if(event.message.mentioned){
-    gemini(chat, msgID, msgText,message.senderId);
+  
+  if (event.message.mentioned) {
+    gemini(chat, msgID, msgText, message.senderId);
   }
 
   if (msgText.startsWith("/gif") || msgText.startsWith("gif")) {
@@ -59,8 +59,14 @@ async function eventPrint(event) {
     gemini(chat, msgID, msgText);
   }
 
-  if (msgText.startsWith("/gen") || msgText.startsWith("gen")) {
-    genImage(sender.id,chat, msgID, msgText);
+  
+  if (msgText.startsWith("/gen")) {
+    genImage(sender.id, chat, msgID, msgText);
+  }
+  
+  
+  if (msgText.startsWith("/gen2")) {
+    genImage2(sender.id, chat, msgID, msgText);
   }
 
   if (msgText.startsWith("/mp3") || msgText.startsWith("mp3")) {
@@ -70,6 +76,7 @@ async function eventPrint(event) {
   if (msgText.startsWith("/lyrics") || msgText.startsWith("lyrics")) {
     lyricsFinder(chat, msgID, msgText);
   }
+
   if (msgText.startsWith("/about") || msgText.startsWith("about")) {
     replyWithAbout(chat, msgID, msgText);
   }
@@ -77,6 +84,5 @@ async function eventPrint(event) {
 
 
 const debouncedEventPrint = debounce(eventPrint, 500);
-
 
 export { debouncedEventPrint as eventPrint };
