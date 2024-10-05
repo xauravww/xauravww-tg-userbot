@@ -7,7 +7,6 @@ import debounce from 'debounce';
 import { client, connectClient, startSeconds } from "../client.js";
 import { replyWithPing } from "./Functions/ping.js";
 import { stopServer } from "./Functions/crash.js";
-import { mp3Handler } from "./Functions/yt2mp3/mp3.js";
 import { replyWithRandomGif } from "./Functions/gifs.js";
 import { replyWithFun, replyWithUserId ,replyWithAbout } from "./Functions/miscellaneous.js";
 import { gemini } from "./Functions/gemini/query_gemini-api.js";
@@ -15,9 +14,11 @@ import { lyricsFinder } from "./Functions/lyrics.js";
 // import { genImage } from "./Functions/image-gens/flux-koda-gen.js";
 // import { genImage2 } from "./Functions/image-gens/speed-gen.js";
 import { genButtons } from "./Functions/image-gens/buttons-image-gens.js";
+import { songDownloader } from "./Functions/song.js";
 
 
 async function eventPrint(event) {
+console.log("🚠 ~ msgs.js:20 -> event: ",  event);
   const message = event.message;
   const msgID = event.message.id;
   const msgText = message.text.toLowerCase();
@@ -27,6 +28,10 @@ async function eventPrint(event) {
   const chat = await client.getInputEntity(event.message.peerId);
   const sender = await message.getSender();
   
+  if(!sender || !sender.id || !chat || !msgID || !msgText || !message){
+    console.log("Invalid event data")
+    return;
+  }
   if (event.message.mentioned) {
     gemini(chat, msgID, msgText, message.senderId);
   }
@@ -60,8 +65,8 @@ async function eventPrint(event) {
     genButtons(sender.id, chat, msgID, msgText);
   }
 
-  if (msgText.startsWith("/mp3") || msgText.startsWith("mp3")) {
-    mp3Handler(chat, msgID, msgText);
+  if (msgText.startsWith("/song")) {
+    songDownloader(chat, msgID, msgText);
   }
 
   if (msgText.startsWith("/lyrics") || msgText.startsWith("lyrics")) {

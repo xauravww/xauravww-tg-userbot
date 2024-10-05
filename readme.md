@@ -11,7 +11,7 @@ Welcome to the official repository of `@xaurav_assistant_bot` This bot is design
 The bot supports the following commands (case-insensitive):
 
 1. `/ping`: Check the bot's uptime and latency.
-2. `/mp3 song_name`: Convert any YouTube video to MP3 by providing the song or video name.
+2. `/song song_name`: Convert any YouTube video to MP3 by providing the song or video name.
 3. `/ask any_query`: Use the Google Gemini API for querying (AI chatbot).
 4. `/gif`: Generate random gifs from the channel.
 5. `/lyrics song_name by singer_name`: Find the lyrics of a song (mostly for popular or foreign songs).
@@ -29,7 +29,7 @@ The bot supports the following commands (case-insensitive):
 - High Uptime: 99.999% uptime rate and bug-free operation.
 - AI Integration: Utilizes the Google Gemini API for advanced querying capabilities uisng `/ask <prompt>`.
 - Random GIFs: Generates random GIFs using `/gif` from the specified channel.
-- YouTube to MP3: Downloads any YouTube video as an MP3 file by just providing the name of the song or video `mp3 <song_name>`.
+- YouTube to MP3: Downloads any YouTube video as an MP3 file by just providing the name of the song or video `/song <song_name>`.
 - User ID Retrieval: `/userid` Allows users to retrieve their Telegram user ID.
 - Lyrics Finder: Searches and provides `/lyrics <song_name> by <singer_name>` for songs, especially popular and foreign ones.
 - Owner Commands: Special commands like `/stop <password>` are restricted to the owner for security.
