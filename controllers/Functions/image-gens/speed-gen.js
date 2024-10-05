@@ -1,4 +1,4 @@
-import { client } from "../../client.js";
+import { client } from "../../../client.js";
 import axios from "axios";
 import FormData from "form-data";
 import { LocalStorage } from "node-localstorage";
@@ -6,37 +6,28 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
-const localStorage = new LocalStorage("./scratch");
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-function setUserData(userId, key, value) {
-  let userData = JSON.parse(localStorage.getItem(userId)) || {};
-  userData[key] = value;
-  localStorage.setItem(userId, JSON.stringify(userData));
-}
 
-function getUserData(userId, key) {
-  let userData = JSON.parse(localStorage.getItem(userId)) || {};
-  return userData[key];
-}
-
-export async function genImage2(userId, chat, msgId, message) {
+export async function genImage2(userId, chat, msgId, message,initialMessageId) {
   console.table(JSON.stringify(userId, chat, msgId, message));
-  setUserData(userId, "globalChat", chat);
-  setUserData(userId, "globalMessage", message.replace(/\/gen/, ""));
+ console.log("initial msg id", initialMessageId)
 
   try {
-    const initialMessage = await client.sendMessage(chat, {
+    await client.sendMessage(chat, {
       message: "Image generation is underway. Please hold on...",
       replyTo: msgId,
     });
 
-    setUserData(userId, "globalInitialMessage", initialMessage);
+    
     console.log("Initial message sent: Image generation is underway.");
 
     const formData = new FormData();
-    const prompt = message.replace(/\/gen/, "");
+    console.log("🎈 ~ speed-gen.js:27 -> formData: ",  formData);
+    const prompt = message.replace(/\/gen2/, "");
+    console.log("🛶 ~ speed-gen.js:29 -> prompt: ",  prompt);
     formData.append("prompt", prompt);
 
     const response = await axios.post(process.env.FREE_IMG_GEN_API, formData, {
@@ -53,14 +44,15 @@ export async function genImage2(userId, chat, msgId, message) {
 
     const tempImagePath = path.join(tempDir, `${userId}.png`);
     fs.writeFileSync(tempImagePath, imageBuffer);
-
-
-
+     await client.editMessage(chat, {
+            message: initialMessageId,
+            text: `Image generation complete!`,
+          });
     await client.sendFile(chat, {
       file: tempImagePath,
-      caption: `<code>${prompt}</code>`,
+      caption: `<code>${message}</code>`,
       replyTo: msgId,
-      parseMode:"html"
+      parseMode: "html",
     });
 
     fs.unlinkSync(tempImagePath);

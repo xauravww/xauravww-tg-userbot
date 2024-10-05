@@ -2,7 +2,7 @@
 
 ## Telegram Bot Designed for @shhhhhfirkoih
 
-Welcome to the official repository of @xaurav_assistant_bot This bot is designed to cater to a variety of tasks and functionalities for Telegram users, whether in group chats, channels, or direct messages.
+Welcome to the official repository of `@xaurav_assistant_bot` This bot is designed to cater to a variety of tasks and functionalities for Telegram users, whether in group chats, channels, or direct messages.
 
 ---
 
@@ -10,17 +10,16 @@ Welcome to the official repository of @xaurav_assistant_bot This bot is designed
 
 The bot supports the following commands (case-insensitive):
 
-1. Ping: Check the bot's uptime and latency.
-2. MP3 song_name: Convert any YouTube video to MP3 by providing the song or video name.
-3. Q any_query: Use the Google Gemini API for querying (AI chatbot).
-4. gif: Generate random gifs from the channel.
-5. Lyrics song_name by singer_name: Find the lyrics of a song (mostly for popular or foreign songs).
-6. Fun: Trigger a fun response.
-7. Stop secret_password: Stop the server (restricted to the owner).
-8. Userid: Get the user's Telegram ID.
-9. About: Get information about the bot.
-10. Gen <prompt> : to generate high quality ai image (not recommended)
-11. Gen2 <prompt> : alternative to Gen cmnd but faster (Recommended for better performance)
+1. `/ping`: Check the bot's uptime and latency.
+2. `/mp3 song_name`: Convert any YouTube video to MP3 by providing the song or video name.
+3. `/ask any_query`: Use the Google Gemini API for querying (AI chatbot).
+4. `/gif`: Generate random gifs from the channel.
+5. `/lyrics song_name by singer_name`: Find the lyrics of a song (mostly for popular or foreign songs).
+6. `/fun`: Trigger a fun response. (Please don't use this)
+7. `/stop secret_password`: Stop the server (restricted to the owner).
+8. `/userid`: Get the user's Telegram ID.
+9. `/about`: Get information about the bot.
+10. `/gen <prompt>` : to generate high quality ai images
 
 ---
 
@@ -28,14 +27,14 @@ The bot supports the following commands (case-insensitive):
 
 - Reels Transfer: Transfers all Instagram reels to a Telegram channel with meta tags, allowing easy retrieval via queries.
 - High Uptime: 99.999% uptime rate and bug-free operation.
-- AI Integration: Utilizes the Google Gemini API for advanced querying capabilities.
-- Random GIFs: Generates random GIFs from the specified channel.
-- YouTube to MP3: Downloads any YouTube video as an MP3 file by just providing the name of the song or video.
-- User ID Retrieval: Allows users to retrieve their Telegram user ID.
-- Lyrics Finder: Searches and provides lyrics for songs, especially popular and foreign ones.
-- Owner Commands: Special commands like "Stop" are restricted to the owner for security.
-- Latency Check: Use the "Ping" command to check the bot's responsiveness and uptime.
-- AI Image Generation: Use the "/gen" or "/gen2" command followed by a prompt to generate an AI image.
+- AI Integration: Utilizes the Google Gemini API for advanced querying capabilities uisng `/ask <prompt>`.
+- Random GIFs: Generates random GIFs using `/gif` from the specified channel.
+- YouTube to MP3: Downloads any YouTube video as an MP3 file by just providing the name of the song or video `mp3 <song_name>`.
+- User ID Retrieval: `/userid` Allows users to retrieve their Telegram user ID.
+- Lyrics Finder: Searches and provides `/lyrics <song_name> by <singer_name>` for songs, especially popular and foreign ones.
+- Owner Commands: Special commands like `/stop <password>` are restricted to the owner for security.
+- Latency Check: Use the `/ping` command to check the bot's responsiveness and uptime.
+- AI Image Generation: Use the `/gen` command followed by a prompt to generate high quality AI images.
 
 ---
 
@@ -109,4 +108,8 @@ Follow these steps to set up and run the bot:
     https://gram.js.org/getting-started/authorization
 
 If you have any doubt feel free to contact me on my telegram account
-@saurav_lakhotia
+@shhhhhfirkoih
+
+
+
+
