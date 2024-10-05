@@ -35,17 +35,21 @@ export async function genButtons(userId, chat, msgId, message) {
   // Create buttons with a reference to the stored userId
   const buttons = [
     [
-      Button.inline("Schnell Gen (fast + good quality)", Buffer.from(`flux-schnell|${userId}`)),
-      Button.inline("Speed Gen (fastest + med quality)", Buffer.from(`speed-gen|${userId}`)),
-      Button.inline("Replicate Gen (med + best quality)", Buffer.from(`replicate-gen|${userId}`)),
+      Button.inline("Schnell Gen", Buffer.from(`flux-schnell|${userId}`)),
+      Button.inline("Speed Gen", Buffer.from(`speed-gen|${userId}`)),
     ],
+    [ Button.inline("Replicate Gen", Buffer.from(`replicate-gen|${userId}`))]
   ];
 
   // Send a message with buttons to the user
   const initialMsg = await client.sendMessage(chat, {
-    message: "Please choose an image generation model:",
+    message: `Please choose an image generation model: 
+    <pre>Schnell Gen (fast + good quality)</pre>
+    <pre>Speed Gen (fastest + med quality)</pre>
+    <pre>Replicate Gen (med + best quality)</pre>`,
     replyTo: msgId,
     buttons: buttons,
+    parseMode: "md2",
   });
   
   // Update initialMsgId in globalchat
