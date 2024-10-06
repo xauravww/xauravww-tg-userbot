@@ -5,13 +5,14 @@ import { Button } from "telegram/tl/custom/button.js";
 import { CallbackQuery } from "telegram/events/CallbackQuery.js";
 import { generateImage3 } from "./flux-schnell-gen.js";
 import {
-  setMessageData,
-  getMessageData,
-  deleteMessageData,
+  getvalueData,
+  setvalueData,
+  deletevalueData,
 } from "../../utils/localStorageUtils.js";
 import { genImage2 } from "./speed-gen.js";
 import { genImage4 } from "./replicate-gen.js";
 import { genImage5 } from "./flux-koda-gen.js";
+import { Api } from "telegram";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -54,7 +55,7 @@ export async function genButtons(userId, chat, msgId, message) {
   
   // Update initialMsgId in globalchat
   globalchat[userId].initialMsgId = initialMsg.id;
-  setMessageData(userId, initialMsg.id);
+  // setvalueData(userId, initialMsg.id);
 }
 
 // Add the button callback handler for the image generation buttons
@@ -62,71 +63,80 @@ client.addEventHandler(ButtonHandler, new CallbackQuery({}));
 
 // Callback handler for button clicks
 async function ButtonHandler(event) {
-  const userId = event.query.userId;
+  // Get the userId from the event (user who clicked the button)
+  const clickedUserId = event.query.userId; 
   const callbackData = event.query.data.toString("utf-8").trim(); // Get the callback data
-
+  const callbackQueryId = event.query.queryId;
   // Access chat and msgId from globalchat
-  const chat = globalchat[userId]?.chat || event.query.peer.userId;
-  const msgId = globalchat[userId]?.msgId;
+  const chat = globalchat[clickedUserId]?.chat || event.query.peer.userId;
+  const msgId = globalchat[clickedUserId]?.msgId;
 
-  // Split the callback data to get the action and userId
-  const [action, callbackUserId] = callbackData.split("|");
+  // Split the callback data to get the action and original userId
+  const [action, originalUserId] = callbackData.split("|");
+
+  // Ensure that only the user who initiated the process can click the button
+  if (clickedUserId.toString() !== originalUserId.toString()) {
+    // Send a message back to the chat if the user is not the one who initiated
+    await client.invoke(new Api.messages.SetBotCallbackAnswer({
+      queryId: callbackQueryId, // Use the query ID from event
+      message: "Your are not the one who initiated this message",
+      alert: true, // Show as an alert popup
+    }));
+    
+
+    return;  // Return early if the clicked user is different
+  }
 
   console.log("Callback data received:", action);
 
-  // Retrieve the message using the userId from globalchat
-  const message = globalchat[userId]?.message;
+  // Retrieve the message using the originalUserId from globalchat
+  const message = globalchat[originalUserId]?.message;
   console.log("Message retrieved:", message);
 
   switch (action) {
     case "flux-schnell":
       console.log("flux-schnell button clicked");
       await generateImage3(
-        userId,
+        originalUserId,
         chat,
         msgId,
         message.replace(/\/gen/, ""),
         process.env.FLUX_SCHNELL_API_MODEL_SUFFIX,
-        parseInt(globalchat[userId]?.initialMsgId) 
+        parseInt(globalchat[originalUserId]?.initialMsgId)
       );
-      deleteMessageData(callbackUserId);
       break;
       
     case "speed-gen":
       console.log("speed-gen button clicked");
       await genImage2(
-        userId,
+        originalUserId,
         chat,
         msgId,
         message.replace(/\/gen/, ""),
-        parseInt(globalchat[userId]?.initialMsgId) // Accessing initialMsgId
+        parseInt(globalchat[originalUserId]?.initialMsgId)
       );
-      console.log("🍺 ~ buttons-image-gens.js:93 -> userId: ", userId, chat, msgId, message.replace(/\/ben3/, ""), parseInt(globalchat[userId]?.initialMsgId));
-      deleteMessageData(callbackUserId);
       break;
 
     case "replicate-gen":
-      console.log("replicate-gen");
+      console.log("replicate-gen button clicked");
       await genImage4(
-        userId,
+        originalUserId,
         chat,
         msgId,
         message.replace(/\/gen/, ""),
-        parseInt(globalchat[userId]?.initialMsgId) 
+        parseInt(globalchat[originalUserId]?.initialMsgId)
       );
-      deleteMessageData(callbackUserId);
       break;
 
     case "koda-gen":
-      console.log("koda-gen");
+      console.log("koda-gen button clicked");
       await genImage5(
-        userId,
+        originalUserId,
         chat,
         msgId,
         message.replace(/\/gen/, ""),
-        parseInt(globalchat[userId]?.initialMsgId) 
+        parseInt(globalchat[originalUserId]?.initialMsgId)
       );
-      deleteMessageData(callbackUserId);
       break;
 
     default:
