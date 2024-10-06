@@ -1,6 +1,6 @@
 // Import necessary modules
 import { createRequire } from "module";
-import { Downloader } from "ytdl-mp3";
+import ytstream from 'yt-stream'; 
 import path from "path";
 import fs from "fs";
 import { client } from "../../../client.js";
@@ -14,39 +14,51 @@ import {
 // Global object to store downloaded songs
 const songsGlobalObject = {};
 
-// Main function to download the song
-async function main(songUrl) {
+// Main function to download the song using yt-stream
+async function main(songUrl,songName) {
   try {
     const outputDir = `${path.resolve(
       "./controllers/Functions/yt2mp3/output"
     )}`;
+    
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
-    const downloader = new Downloader({
-      getTags: false,
-      verifyTags: false,
-      outputDir,
-      requestOptions: {
-        headers: {
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
-        },
-      },
+    // const songId = new URL(songUrl).searchParams.get('v'); // Extract video ID from URL
+    const filePath = path.join(outputDir, `${songName}.mp3`); 
+
+    const stream = await ytstream.stream(songUrl, {
+      quality: 'high',
+      type: 'audio',
+      highWaterMark: 1048576 * 32,
+      download: true,
     });
 
-    const fileName = await downloader.downloadSong(songUrl);
-    return fileName; // Return the file name for later use
+    // Pipe the stream to a file
+    const writeStream = fs.createWriteStream(filePath);
+    stream.stream.pipe(writeStream);
+
+    return new Promise((resolve, reject) => {
+      writeStream.on('finish', () => {
+        console.log(`Downloaded file at ${filePath}`);
+        resolve(filePath); 
+      });
+
+      writeStream.on('error', (error) => {
+        console.error("Error writing file:", error);
+        reject(error); 
+      });
+    });
   } catch (error) {
     console.error("Error in main downloader function:", error);
-    return null; // Return null if an error occurs
+    return null; 
   }
 }
 
 // Function to handle song download and send the MP3 file to the user
 export async function songDownloader(chat, msgID, msgText) {
-  const songName = msgText.split(" ")[1]; // Extract the song name from the message
+  const songName = msgText.replace(/\/song/, "");
   const songUrl = await getSongUrl(msgText);
 
   if (!songUrl) {
@@ -81,7 +93,7 @@ export async function songDownloader(chat, msgID, msgText) {
     replyTo: msgID,
   });
 
-  const downloadedFileName = await main(songUrl);
+  const downloadedFileName = await main(songUrl,songName);
   console.log("Downloaded file at " + downloadedFileName);
 
   if (downloadedFileName && fs.existsSync(downloadedFileName)) {
