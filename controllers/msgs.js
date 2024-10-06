@@ -12,7 +12,7 @@ import { replyWithFun, replyWithUserId, replyWithAbout } from "./Functions/misce
 import { gemini } from "./Functions/gemini/query_gemini-api.js";
 import { lyricsFinder } from "./Functions/lyrics.js";
 import { genButtons } from "./Functions/image-gens/buttons-image-gens.js";
-import { songDownloader } from "./Functions/song.js";
+import { songDownloader } from "./Functions/yt2mp3/song.js";
 
 // Queue for incoming events
 const queue = [];

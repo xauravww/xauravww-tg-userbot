@@ -3,9 +3,13 @@ import { createRequire } from "module";
 import { Downloader } from "ytdl-mp3";
 import path from "path";
 import fs from "fs";
-import { client } from "../../client.js";
+import { client } from "../../../client.js";
 import youtubesearchapi from "youtube-search-api";
-import { setvalueData, getvalueData, deletevalueData } from "../utils/localStorageUtils.js";
+import {
+  setvalueData,
+  getvalueData,
+  deletevalueData,
+} from "../../utils/localStorageUtils.js";
 
 // Global object to store downloaded songs
 const songsGlobalObject = {};
@@ -13,7 +17,9 @@ const songsGlobalObject = {};
 // Main function to download the song
 async function main(songUrl) {
   try {
-    const outputDir = `${path.resolve("./controllers/Functions/yt2mp3/output")}`;
+    const outputDir = `${path.resolve(
+      "./controllers/Functions/yt2mp3/output"
+    )}`;
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
@@ -22,8 +28,12 @@ async function main(songUrl) {
       getTags: false,
       verifyTags: false,
       outputDir,
-      quality: "highestaudio",
-      format: "mp3",
+      requestOptions: {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
+        },
+      },
     });
 
     const fileName = await downloader.downloadSong(songUrl);
@@ -109,8 +119,13 @@ export async function songDownloader(chat, msgID, msgText) {
 // Function to get the YouTube URL based on the song name or input string
 async function getSongUrl(inputString) {
   try {
-    const data = await youtubesearchapi.GetListByKeyword(inputString, false, 1, { type: "video" });
-    
+    const data = await youtubesearchapi.GetListByKeyword(
+      inputString,
+      false,
+      1,
+      { type: "video" }
+    );
+
     if (data?.items?.length > 0) {
       const videoLink = `https://www.youtube.com/watch?v=${data.items[0].id}`;
       return videoLink;
