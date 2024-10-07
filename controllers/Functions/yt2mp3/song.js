@@ -10,22 +10,38 @@ import {
   getvalueData,
   deletevalueData,
 } from "../../utils/localStorageUtils.js";
+import dotenv from 'dotenv';
+
+
+dotenv.config();
 
 // Global object to store downloaded songs
 const songsGlobalObject = {};
 
+// Parse cookies from environment variable
+const cookies = JSON.parse(process.env.YT_COOKIES);
+
+// Create a new YTStreamAgent with cookies
+const agent = new ytstream.YTStreamAgent(cookies, {
+    keepAlive: true,           // Optional
+    keepAliveMsecs: 5000      // Optional
+});
+
+// Set the global agent for yt-stream
+ytstream.setGlobalAgent(agent);
+
+// Set a custom user agent
+ytstream.userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) Gecko/20100101 Firefox/94.0";
+
 // Main function to download the song using yt-stream
-async function main(songUrl,songName) {
+async function main(songUrl, songName) {
   try {
-    const outputDir = `${path.resolve(
-      "./controllers/Functions/yt2mp3/output"
-    )}`;
+    const outputDir = `${path.resolve("./controllers/Functions/yt2mp3/output")}`;
     
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
-    // const songId = new URL(songUrl).searchParams.get('v'); // Extract video ID from URL
     const filePath = path.join(outputDir, `${songName}.mp3`); 
 
     const stream = await ytstream.stream(songUrl, {
@@ -73,7 +89,6 @@ export async function songDownloader(chat, msgID, msgText) {
   // Check if the song already exists in localStorage
   const storedFileName = getvalueData(songUrl);
   if (storedFileName && fs.existsSync(storedFileName)) {
-    // Send the previously downloaded file
     console.log(`Sending the previously downloaded file for ${songName}...`);
 
     await client.sendFile(chat, {
@@ -82,7 +97,6 @@ export async function songDownloader(chat, msgID, msgText) {
       replyTo: msgID,
     });
 
-    // Remove the song from localStorage after sending
     deletevalueData(songUrl);
     console.log(`Deleted ${songName} from localStorage after sending.`);
     return;
@@ -93,15 +107,13 @@ export async function songDownloader(chat, msgID, msgText) {
     replyTo: msgID,
   });
 
-  const downloadedFileName = await main(songUrl,songName);
+  const downloadedFileName = await main(songUrl, songName);
   console.log("Downloaded file at " + downloadedFileName);
 
   if (downloadedFileName && fs.existsSync(downloadedFileName)) {
-    // Store the song in localStorage and global object
     setvalueData(songUrl, downloadedFileName);
     songsGlobalObject[songUrl] = downloadedFileName;
 
-    // Send the MP3 file to the user
     await client.editMessage(chat, {
       message: firstReplyMessage.id,
       text: "File has been downloaded successfully. \n Hold On !!! Sending you in a few seconds.",
@@ -113,7 +125,6 @@ export async function songDownloader(chat, msgID, msgText) {
       replyTo: msgID,
     });
 
-    // Remove the MP3 file after sending
     try {
       await fs.promises.unlink(downloadedFileName);
       console.log(`Successfully deleted file: ${downloadedFileName}`);
