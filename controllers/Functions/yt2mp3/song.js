@@ -1,5 +1,4 @@
 // Import necessary modules
-import { createRequire } from "module";
 import ytstream from 'yt-stream'; 
 import path from "path";
 import fs from "fs";
@@ -11,27 +10,67 @@ import {
   deletevalueData,
 } from "../../utils/localStorageUtils.js";
 import dotenv from 'dotenv';
-
+import { google } from 'googleapis';
 
 dotenv.config();
 
 // Global object to store downloaded songs
 const songsGlobalObject = {};
 
-// Parse cookies from environment variable
-const cookies = JSON.parse(process.env.YT_COOKIES);
+// Configure OAuth2 client
+const oauth2Client = new google.auth.OAuth2(
+  process.env.CLIENT_ID,
+  process.env.CLIENT_SECRET,
+  process.env.REDIRECT_URI
+);
 
-// Create a new YTStreamAgent with cookies
-const agent = new ytstream.YTStreamAgent(cookies, {
-    keepAlive: true,           // Optional
-    keepAliveMsecs: 5000      // Optional
-});
+// Load tokens from local storage or create a new tokens.json if it doesn't exist
+const tokenFilePath = './tokens.json';
 
-// Set the global agent for yt-stream
-ytstream.setGlobalAgent(agent);
+if (fs.existsSync(tokenFilePath)) {
+    const storedTokens = JSON.parse(fs.readFileSync(tokenFilePath, 'utf-8'));
+    if (storedTokens.access_token) {
+        oauth2Client.setCredentials(storedTokens);
+    }
+} else {
+    // Initialize the tokens.json file if it doesn't exist
+    fs.writeFileSync(tokenFilePath, JSON.stringify({}));
+}
 
-// Set a custom user agent
-ytstream.userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0) Gecko/20100101 Firefox/94.0";
+// Generate authentication URL
+function getAuthUrl() {
+  const scopes = [
+    'https://www.googleapis.com/auth/youtube.readonly', // Adjust scopes as necessary
+  ];
+
+  return oauth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: scopes,
+  });
+}
+
+// Handle OAuth2 callback and get access token
+export async function getAccessToken(code) {
+  const { tokens } = await oauth2Client.getToken(code);
+  oauth2Client.setCredentials(tokens);
+
+  // Store tokens securely (e.g., in a file)
+  fs.writeFileSync(tokenFilePath, JSON.stringify(tokens));
+  console.log('Tokens acquired:', tokens);
+}
+
+// Refresh token if needed before making requests
+async function refreshAccessTokenIfNeeded() {
+    const { credentials } = oauth2Client;
+    if (credentials.expiry_date && credentials.expiry_date < Date.now()) {
+        const newTokens = await oauth2Client.refreshAccessToken();
+        oauth2Client.setCredentials(newTokens.credentials);
+        
+        // Update stored tokens after refreshing
+        fs.writeFileSync(tokenFilePath, JSON.stringify(newTokens.credentials));
+        console.log('Access token refreshed:', newTokens.credentials);
+    }
+}
 
 // Main function to download the song using yt-stream
 async function main(songUrl, songName) {
@@ -74,6 +113,19 @@ async function main(songUrl, songName) {
 
 // Function to handle song download and send the MP3 file to the user
 export async function songDownloader(chat, msgID, msgText) {
+  // Check if user needs to authenticate first
+  if (!oauth2Client.credentials.access_token) {
+    const authUrl = getAuthUrl();
+    await client.sendMessage(chat, {
+      message: `Please authorize this app by visiting this URL: ${authUrl} \n\n\n This is one time process after deployment.\n\n Please tell the developer ${process.env.DEV_USERNAME} to complete this process`,
+      replyTo: msgID,
+    });
+    return;
+  }
+
+  // Refresh token if needed before proceeding
+  await refreshAccessTokenIfNeeded();
+
   const songName = msgText.replace(/\/song/, "");
   const songUrl = await getSongUrl(msgText);
 
@@ -108,8 +160,7 @@ export async function songDownloader(chat, msgID, msgText) {
   });
 
   const downloadedFileName = await main(songUrl, songName);
-  console.log("Downloaded file at " + downloadedFileName);
-
+  
   if (downloadedFileName && fs.existsSync(downloadedFileName)) {
     setvalueData(songUrl, downloadedFileName);
     songsGlobalObject[songUrl] = downloadedFileName;
