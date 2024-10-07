@@ -1,4 +1,4 @@
-import { startSeconds, client } from "../../client.js";
+import { startSeconds, client } from "../../client-init.js";
 import request from "request";
 
 export async function lyricsFinder(chat, msgId, messageText) {

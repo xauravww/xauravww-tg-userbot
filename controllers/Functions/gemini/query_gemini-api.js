@@ -7,7 +7,7 @@ dotenv.config({ path: path.resolve(".env") })
 
 
 
-import { client } from "../../../client.js";
+import { client } from "../../../client-init.js";
 import handleGeminiQuery from "./gemini.js";
 
 

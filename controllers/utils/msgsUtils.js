@@ -7,7 +7,7 @@ const require = createRequire(import.meta.url)
 const { StringSession } = require("telegram/sessions")
 const { Api, TelegramClient } = require("telegram")
 
-import { client, connectClient } from "../../client.js"
+import { client, connectClient } from "../../client-init.js"
 const path = require("path")
 
 async function replyToMessage(msgText, gcID, msgID, peer, channelpeerId) {

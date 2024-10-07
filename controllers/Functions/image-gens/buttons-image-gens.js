@@ -1,4 +1,4 @@
-import { client } from "../../../client.js";
+import { client } from "../../../client-init.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import { Button } from "telegram/tl/custom/button.js";
@@ -11,7 +11,7 @@ import {
 } from "../../utils/localStorageUtils.js";
 import { genImage2 } from "./speed-gen.js";
 import { genImage4 } from "./replicate-gen.js";
-import { genImage5 } from "./flux-koda-gen.js";
+
 import { Api } from "telegram";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -120,17 +120,6 @@ async function ButtonHandler(event) {
     case "replicate-gen":
       console.log("replicate-gen button clicked");
       await genImage4(
-        originalUserId,
-        chat,
-        msgId,
-        message.replace(/\/gen/, ""),
-        parseInt(globalchat[originalUserId]?.initialMsgId)
-      );
-      break;
-
-    case "koda-gen":
-      console.log("koda-gen button clicked");
-      await genImage5(
         originalUserId,
         chat,
         msgId,

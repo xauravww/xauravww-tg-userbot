@@ -1,7 +1,7 @@
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const path = require("path");
-import { client } from "../../client.js";
+import { client } from "../../client-init.js";
 const dotenv = require("dotenv");
 dotenv.config({ path: path.resolve(".env") });
 

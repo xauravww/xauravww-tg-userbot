@@ -3,16 +3,16 @@ const require = createRequire(import.meta.url)
 
 const { NewMessage } = require("telegram/events")
 import graphApiRouters from "./routers/graph-api.js"
-import googleAuthRouters from "./routers/google-auth.js"
-import "./client.js"
-import { client, connectClient } from "./client.js"
+
+import "./client-init.js"
+import { client, connectClient } from "./client-init.js"
 import { eventPrint } from "./controllers/msgs.js"
 const express = require("express")
 const app = express()
 import bodyParser from "body-parser"
 app.use(bodyParser.json());
 app.use("/",graphApiRouters)
-app.use("/auth",googleAuthRouters)
+
 
 import { job } from "./cron.js"
 job.start()

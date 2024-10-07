@@ -1,4 +1,4 @@
-import { client } from "../../../client.js";
+import { client } from "../../../client-init.js";
 import axios from "axios";
 
 import fs from "fs";

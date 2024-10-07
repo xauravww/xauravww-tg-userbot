@@ -2,7 +2,7 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
 var request = require("request");
-import { startSeconds, client } from "../../client.js";
+import { startSeconds, client } from "../../client-init.js";
 import {
   replyToMessage,
   countUptimeServer,

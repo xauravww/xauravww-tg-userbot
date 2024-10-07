@@ -1,4 +1,4 @@
-import { client } from "../../client.js";
+import { client } from "../../client-init.js";
 
 export async function replyWithUserId(chat, msgId, message) {
   try {

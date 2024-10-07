@@ -1,6 +1,6 @@
 import { createRequire } from "module"
 const require = createRequire(import.meta.url)
-import { client } from "../client.js";
+import { client } from "../client-init.js";
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const path = require("path")
 const dotenv = require("dotenv")

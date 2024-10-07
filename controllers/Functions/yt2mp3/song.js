@@ -1,132 +1,71 @@
 // Import necessary modules
-import ytstream from 'yt-stream'; 
+import { createRequire } from "module";
 import path from "path";
 import fs from "fs";
-import { client } from "../../../client.js";
+import { client } from "../../../client-init.js";
 import youtubesearchapi from "youtube-search-api";
 import {
   setvalueData,
   getvalueData,
   deletevalueData,
 } from "../../utils/localStorageUtils.js";
-import dotenv from 'dotenv';
-import { google } from 'googleapis';
-
-dotenv.config();
+import axios from "axios";
 
 // Global object to store downloaded songs
 const songsGlobalObject = {};
 
-// Configure OAuth2 client
-const oauth2Client = new google.auth.OAuth2(
-  process.env.CLIENT_ID,
-  process.env.CLIENT_SECRET,
-  process.env.REDIRECT_URI
-);
 
-// Load tokens from local storage or create a new tokens.json if it doesn't exist
-const tokenFilePath = './tokens.json';
 
-if (fs.existsSync(tokenFilePath)) {
-    const storedTokens = JSON.parse(fs.readFileSync(tokenFilePath, 'utf-8'));
-    if (storedTokens.access_token) {
-        oauth2Client.setCredentials(storedTokens);
-    }
-} else {
-    // Initialize the tokens.json file if it doesn't exist
-    fs.writeFileSync(tokenFilePath, JSON.stringify({}));
-}
 
-// Generate authentication URL
-function getAuthUrl() {
-  const scopes = [
-    'https://www.googleapis.com/auth/youtube.readonly', // Adjust scopes as necessary
-  ];
-
-  return oauth2Client.generateAuthUrl({
-    access_type: 'offline',
-    scope: scopes,
-  });
-}
-
-// Handle OAuth2 callback and get access token
-export async function getAccessToken(code) {
-  const { tokens } = await oauth2Client.getToken(code);
-  oauth2Client.setCredentials(tokens);
-
-  // Store tokens securely (e.g., in a file)
-  fs.writeFileSync(tokenFilePath, JSON.stringify(tokens));
-  console.log('Tokens acquired:', tokens);
-}
-
-// Refresh token if needed before making requests
-async function refreshAccessTokenIfNeeded() {
-    const { credentials } = oauth2Client;
-    if (credentials.expiry_date && credentials.expiry_date < Date.now()) {
-        const newTokens = await oauth2Client.refreshAccessToken();
-        oauth2Client.setCredentials(newTokens.credentials);
-        
-        // Update stored tokens after refreshing
-        fs.writeFileSync(tokenFilePath, JSON.stringify(newTokens.credentials));
-        console.log('Access token refreshed:', newTokens.credentials);
-    }
-}
-
-// Main function to download the song using yt-stream
-async function main(songUrl, songName) {
+async function main(songUrl,songName) {
   try {
-    const outputDir = `${path.resolve("./controllers/Functions/yt2mp3/output")}`;
-    
-    if (!fs.existsSync(outputDir)) {
-      fs.mkdirSync(outputDir, { recursive: true });
-    }
-
-    const filePath = path.join(outputDir, `${songName}.mp3`); 
-
-    const stream = await ytstream.stream(songUrl, {
-      quality: 'high',
-      type: 'audio',
-      highWaterMark: 1048576 * 32,
-      download: true,
+    // Fetch stream URL from API
+    const apiResponse = await axios.post(process.env.YT_DOWNLOADER_API_URL, {
+      filenamePattern: "pretty",
+      isAudioOnly: true,
+      url: songUrl
     });
 
-    // Pipe the stream to a file
-    const writeStream = fs.createWriteStream(filePath);
-    stream.stream.pipe(writeStream);
+    if (apiResponse.data.status !== 'stream') {
+      throw new Error("Failed to get stream URL");
+    }
+
+    const streamUrl = apiResponse.data.url;
+    console.log("Stream URL received:", streamUrl);
+
+    // Define the path for the MP3 file using path.join()
+    const mp3FilePath = path.join(process.cwd(), `${songName}.mp3`);
+
+    // Download the MP3 file
+    const response = await axios({
+      method: 'get',
+      url: streamUrl,
+      responseType: 'stream'
+    });
+
+    // Pipe the response data to a file
+    const writer = fs.createWriteStream(mp3FilePath);
+    
+    response.data.pipe(writer);
 
     return new Promise((resolve, reject) => {
-      writeStream.on('finish', () => {
-        console.log(`Downloaded file at ${filePath}`);
-        resolve(filePath); 
+      writer.on('finish', () => {
+        console.log(`MP3 file saved to ${mp3FilePath}`);
+        resolve(mp3FilePath); // Return the path of the saved MP3 file
       });
-
-      writeStream.on('error', (error) => {
-        console.error("Error writing file:", error);
-        reject(error); 
+      writer.on('error', (error) => {
+        console.error("Error writing MP3 file:", error);
+        reject(error); // Reject the promise on error
       });
     });
   } catch (error) {
     console.error("Error in main downloader function:", error);
-    return null; 
+    return null; // Return null if an error occurs
   }
 }
-
 // Function to handle song download and send the MP3 file to the user
 export async function songDownloader(chat, msgID, msgText) {
-  // Check if user needs to authenticate first
-  if (!oauth2Client.credentials.access_token) {
-    const authUrl = getAuthUrl();
-    await client.sendMessage(chat, {
-      message: `Please authorize this app by visiting this URL: ${authUrl} \n\n\n This is one time process after deployment.\n\n Please tell the developer ${process.env.DEV_USERNAME} to complete this process`,
-      replyTo: msgID,
-    });
-    return;
-  }
-
-  // Refresh token if needed before proceeding
-  await refreshAccessTokenIfNeeded();
-
-  const songName = msgText.replace(/\/song/, "");
+  const songName = msgText.replace(/\/song/, ""); // Extract the song name from the message
   const songUrl = await getSongUrl(msgText);
 
   if (!songUrl) {
@@ -142,7 +81,6 @@ export async function songDownloader(chat, msgID, msgText) {
   const storedFileName = getvalueData(songUrl);
   if (storedFileName && fs.existsSync(storedFileName)) {
     console.log(`Sending the previously downloaded file for ${songName}...`);
-
     await client.sendFile(chat, {
       file: storedFileName,
       caption: `Here is your requested song: ${songName} (previously downloaded)`,
@@ -159,8 +97,9 @@ export async function songDownloader(chat, msgID, msgText) {
     replyTo: msgID,
   });
 
-  const downloadedFileName = await main(songUrl, songName);
-  
+  const downloadedFileName = await main(songUrl,songName);
+  console.log("Downloaded file at " + downloadedFileName);
+
   if (downloadedFileName && fs.existsSync(downloadedFileName)) {
     setvalueData(songUrl, downloadedFileName);
     songsGlobalObject[songUrl] = downloadedFileName;

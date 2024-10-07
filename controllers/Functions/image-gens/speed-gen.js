@@ -1,4 +1,4 @@
-import { client } from "../../../client.js";
+import { client } from "../../../client-init.js";
 import axios from "axios";
 import FormData from "form-data";
 import { LocalStorage } from "node-localstorage";

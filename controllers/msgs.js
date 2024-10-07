@@ -4,7 +4,7 @@ const require = createRequire(import.meta.url);
 
 import debounce from 'debounce';
 
-import { client, connectClient, startSeconds } from "../client.js";
+import { client, connectClient, startSeconds } from "../client-init.js";
 import { replyWithPing } from "./Functions/ping.js";
 import { stopServer } from "./Functions/crash.js";
 import { replyWithRandomGif } from "./Functions/gifs.js";
