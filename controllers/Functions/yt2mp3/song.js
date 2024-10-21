@@ -14,19 +14,17 @@ import axios from "axios";
 // Global object to store downloaded songs
 const songsGlobalObject = {};
 
-
-
-
-async function main(songUrl,songName) {
+async function main(songUrl, songName) {
   try {
     // Fetch stream URL from API
     const apiResponse = await axios.post(process.env.YT_DOWNLOADER_API_URL, {
-      filenamePattern: "pretty",
-      isAudioOnly: true,
-      url: songUrl
+      audioBitrate: "96",
+      downloadMode: "audio",
+      filenameStyle: "pretty",
+      url: songUrl,
     });
 
-    if (apiResponse.data.status !== 'stream') {
+    if (apiResponse.data.status !== "tunnel") {
       throw new Error("Failed to get stream URL");
     }
 
@@ -38,22 +36,22 @@ async function main(songUrl,songName) {
 
     // Download the MP3 file
     const response = await axios({
-      method: 'get',
+      method: "get",
       url: streamUrl,
-      responseType: 'stream'
+      responseType: "stream",
     });
 
     // Pipe the response data to a file
     const writer = fs.createWriteStream(mp3FilePath);
-    
+
     response.data.pipe(writer);
 
     return new Promise((resolve, reject) => {
-      writer.on('finish', () => {
+      writer.on("finish", () => {
         console.log(`MP3 file saved to ${mp3FilePath}`);
         resolve(mp3FilePath); // Return the path of the saved MP3 file
       });
-      writer.on('error', (error) => {
+      writer.on("error", (error) => {
         console.error("Error writing MP3 file:", error);
         reject(error); // Reject the promise on error
       });
@@ -97,7 +95,7 @@ export async function songDownloader(chat, msgID, msgText) {
     replyTo: msgID,
   });
 
-  const downloadedFileName = await main(songUrl,songName);
+  const downloadedFileName = await main(songUrl, songName);
   console.log("Downloaded file at " + downloadedFileName);
 
   if (downloadedFileName && fs.existsSync(downloadedFileName)) {
