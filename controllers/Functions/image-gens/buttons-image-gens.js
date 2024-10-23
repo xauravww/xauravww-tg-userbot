@@ -128,12 +128,12 @@ async function ButtonHandler(event) {
       );
       break;
 
-    default:
-      console.log("Unknown callback data:", callbackData);
-      await client.sendMessage(chat, {
-        message: "Unknown button clicked. Please try again.",
-        replyTo: msgId,
-      });
-      break;
+    // default:
+    //   console.log("Unknown callback data:", callbackData);
+    //   await client.sendMessage(chat, {
+    //     message: "Unknown button clicked. Please try again.",
+    //     replyTo: msgId,
+    //   });
+    //   break;
   }
 }

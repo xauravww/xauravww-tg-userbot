@@ -8,7 +8,7 @@ import { client, connectClient, startSeconds } from "../client-init.js";
 import { replyWithPing } from "./Functions/ping.js";
 import { stopServer } from "./Functions/crash.js";
 import { replyWithRandomGif } from "./Functions/gifs.js";
-import { replyWithFun, replyWithUserId, replyWithAbout } from "./Functions/miscellaneous.js";
+import { replyWithFun, replyWithUserId, replyWithAbout,replyWithStart, replyWithHelp } from "./Functions/miscellaneous.js";
 import { gemini } from "./Functions/gemini/query_gemini-api.js";
 import { lyricsFinder } from "./Functions/lyrics.js";
 import { genButtons } from "./Functions/image-gens/buttons-image-gens.js";
@@ -47,6 +47,7 @@ async function eventPrint(event) {
   const msgID = event.message.id;
   const msgText = message.text.toLowerCase();
   const peerId = event.message.peerId.chatId || event.message.peerId.channelId;
+  console.log(event.message)
 
   const chat = await client.getInputEntity(event.message.peerId);
   const sender = await message.getSender();
@@ -72,8 +73,8 @@ async function eventPrint(event) {
     queueRequest(replyWithPing, chat, msgID, startSeconds);
   }
 
-  if (msgText.startsWith("/userid") || msgText.startsWith("userid")) {
-    queueRequest(replyWithUserId, chat, msgID, message);
+  if (msgText.startsWith("/userid") || msgText.startsWith("userid") || event.message.fwdFrom!=null) {
+    queueRequest(replyWithUserId, chat, msgID, message,event.message?.fwdFrom);
   }
 
   if (msgText.startsWith("/stop") || msgText.startsWith("stop")) {
@@ -99,6 +100,12 @@ async function eventPrint(event) {
 
   if (msgText.startsWith("/about") || msgText.startsWith("about")) {
     queueRequest(replyWithAbout, chat, msgID, msgText);
+  }
+  if (msgText.startsWith("/start") || msgText.startsWith("start")) {
+    queueRequest(replyWithStart, chat, msgID, msgText);
+  }
+  if (msgText.startsWith("/help") || msgText.startsWith("help")) {
+    queueRequest(replyWithHelp, chat, msgID, msgText,sender.id);
   }
 }
 
