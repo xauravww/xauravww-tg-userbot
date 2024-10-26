@@ -47,7 +47,7 @@ async function eventPrint(event) {
   const msgID = event.message.id;
   const msgText = message.text.toLowerCase();
   const peerId = event.message.peerId.chatId || event.message.peerId.channelId;
-  console.log(event.message)
+  // console.log(event.message)
 
   const chat = await client.getInputEntity(event.message.peerId);
   const sender = await message.getSender();
@@ -57,7 +57,7 @@ async function eventPrint(event) {
     return;
   }
 
-  if (event.message.mentioned) {
+  if (event.message.mentioned || event.message.isPrivate) {
     queueRequest(gemini, chat, msgID, msgText, message.senderId);
   }
 

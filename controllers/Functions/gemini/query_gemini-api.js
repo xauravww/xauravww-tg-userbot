@@ -15,17 +15,20 @@ import handleGeminiQuery from "./gemini.js";
 export async function gemini(chat, msgId, messageText,senderId) {
   // Remove the query prefix
   const newString = messageText.replace("ask ", "");
-
+const loadingtext = "✎Typing •၊၊||၊|။||||။၊|။•"
   try {
-    // Inform the user about the search process
+    // Inform the user about the search process 
+    /*
+     I will use it if i need loader something
+    */
     const msgToBeEdited = await client.sendMessage(chat, {
-      message: `Searching... Please wait a few seconds.`,
+      message: loadingtext,
       replyTo: msgId
     });
     const msgToBeEditedId = msgToBeEdited.id;
 
     // Define the filter text
-    const filterText =process.env.FILTERED_TEXT_GEMINI;
+    const filterText =process.env.SYSTEM_INSTRUCTIONS_GEMINI;
 
     // Handle the Gemini query
     const data = handleGeminiQuery(filterText + newString,senderId)
@@ -34,10 +37,10 @@ export async function gemini(chat, msgId, messageText,senderId) {
         const resultText = data.toString();
         const truncatedText = resultText.length > 4096 ? resultText.substring(0, 4093) + "..." : resultText;
 
-        const formattedText = `<pre>${truncatedText}</pre>`;
+        const formattedText = `${truncatedText}`;
         client.editMessage(chat, {
           message: msgToBeEditedId,
-          text: formattedText,
+          text:formattedText,
           replyTo: msgId,
           parseMode:"html"
         });
