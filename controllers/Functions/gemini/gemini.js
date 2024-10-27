@@ -1,8 +1,11 @@
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
+
 const dotenv = require("dotenv");
-dotenv.config({path:'.env'});
+dotenv.config({path:path.resolve('.env')});
 import showdown from "showdown";
+import { getGlobalValue } from "../../utils/global-context.js";
+import path from "path";
 const converter = new showdown.Converter()
 const {
   GoogleGenerativeAI,
@@ -11,7 +14,9 @@ const {
 } = require("@google/generative-ai");
 
 const apiKey = process.env.GEMINI_API_KEY;
-const MODEL_NAME = process.env.MODEL_NAME_GEMINI;
+
+const MODEL_NAME = getGlobalValue("textModel") || process.env.GEMINI_MODEL_NAME.split(" ")[0];
+console.log("MODEL NAME", MODEL_NAME);
 const genAI = new GoogleGenerativeAI(apiKey);
 
 // Configure model with persona-specific system instruction
@@ -81,7 +86,8 @@ async function runChat(inputText, senderId) {
     return html;
   } catch (error) {
     console.error("Error during chat:", error);
-    return "Too many requests. Please try again later.";
+    return `Too many requests. Please try again later. <br>Or contact <a href="tg://openmessage?user_id=${process.env.OWNER_USERID.split(" ")[0]}">here</a> if it persists longer.`;
+
   }
 }
 

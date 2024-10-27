@@ -13,6 +13,7 @@ import { gemini } from "./Functions/gemini/query_gemini-api.js";
 import { lyricsFinder } from "./Functions/lyrics.js";
 import { genButtons } from "./Functions/image-gens/buttons-image-gens.js";
 import { songDownloader } from "./Functions/yt2mp3/song.js";
+import { replyWithGlobalMenu } from "./Functions/global-settings-menu.js";
 
 // Queue for incoming events
 const queue = [];
@@ -57,7 +58,7 @@ async function eventPrint(event) {
     return;
   }
 
-  if (event.message.mentioned || event.message.isPrivate) {
+  if (event.message.mentioned || (event.message.isPrivate)) {
     queueRequest(gemini, chat, msgID, msgText, message.senderId);
   }
 
@@ -106,6 +107,9 @@ async function eventPrint(event) {
   }
   if (msgText.startsWith("/help") || msgText.startsWith("help")) {
     queueRequest(replyWithHelp, chat, msgID, msgText,sender.id);
+  }
+  if (msgText.startsWith("/set") || msgText.startsWith("/set")) {
+    queueRequest(replyWithGlobalMenu, chat, msgID, msgText,sender.id);
   }
 }
 

@@ -93,6 +93,10 @@ export async function replyWithHelp(chat, msgId, message, userId) {
   });
 }
 
+
+
+
+
 client.addEventHandler(ButtonHandler, new CallbackQuery({}));
 
 // Callback handler for button clicks
