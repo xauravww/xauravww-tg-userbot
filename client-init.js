@@ -1,6 +1,6 @@
 import { exec } from "child_process"
 import { createRequire } from "module"
-import { setGlobalObject } from "./controllers/utils/global-context.js"
+
 const require = createRequire(import.meta.url)
 
 const { StringSession } = require("telegram/sessions")
@@ -16,7 +16,7 @@ const session = new StringSession(process.env.SESSION_STRING) // You should put 
 
 const client = new TelegramClient(session, apiId, apiHash, {})
 
-setGlobalObject()
+
  
  
  

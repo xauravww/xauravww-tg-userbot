@@ -5,7 +5,9 @@
 /package-lock.json
 
 
-/scratch
+/scratch/*
+!/scratch/global_object
+
 /.vscode
 controllers/Functions/image-gens/temp_img/5718674458.jpg
 tokens.json
