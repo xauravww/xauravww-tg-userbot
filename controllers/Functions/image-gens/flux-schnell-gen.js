@@ -84,7 +84,7 @@ export async function generateImage3(userId, chat, msgId, message, modelVersion,
   } catch (error) {
     console.error("Error generating image:", error.message);
     await client.sendMessage(chat, {
-      message: "Error during image generation. Please try again later.",
+      message: "Error during image generation. \nOr try again using another model",
       replyTo: msgId,
     });
   }

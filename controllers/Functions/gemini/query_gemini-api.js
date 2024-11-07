@@ -31,7 +31,7 @@ const loadingtext = "✎Typing •၊၊||၊|။||||။၊|။•"
     const filterText =process.env.SYSTEM_INSTRUCTIONS_GEMINI;
 
     // Handle the Gemini query
-    const data = handleGeminiQuery(filterText + newString,senderId)
+    const data = handleGeminiQuery(filterText +"My Question: " + newString,senderId)
       .then((data) => {
         // Update the message with the search result
         const resultText = data.toString();

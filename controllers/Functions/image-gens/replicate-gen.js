@@ -83,7 +83,7 @@ export async function genImage4(userId, chat, msgId, message,initialMessageId) {
 
     // Send error message to chat
     await client.sendMessage(chat, {
-      message: "An error occurred during image generation. Please try again later.",
+      message: "An error occurred during image generation. Please try again later \nOr try again using another model",
       replyTo: msgId,
     });
   }
