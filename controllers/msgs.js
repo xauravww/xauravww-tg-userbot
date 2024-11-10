@@ -14,6 +14,7 @@ import { lyricsFinder } from "./Functions/lyrics.js";
 import { genButtons } from "./Functions/image-gens/buttons-image-gens.js";
 import { songDownloader } from "./Functions/yt2mp3/song.js";
 import { replyWithGlobalMenu } from "./Functions/global-settings-menu.js";
+import { handleImage ,handleVideo } from "./Functions/media-handler.js";
 
 // Queue for incoming events
 const queue = [];
@@ -24,6 +25,8 @@ function queueRequest(func, ...args) {
   queue.push({ func, args });
   processQueue();
 }
+
+
 
 // Function to process the queue
 async function processQueue() {
@@ -52,19 +55,33 @@ async function eventPrint(event) {
 
   const chat = await client.getInputEntity(event.message.peerId);
   const sender = await message.getSender();
-
-  if (!sender || !sender.id || !chat || !msgID || !msgText || !message) {
+// console.log(event.message)
+const isVideo = event?.message?.media?.document?.mimeType=="video/mp4"
+const isWebp = event?.message?.media?.document?.mimeType=="image/webp"
+const isNormalPhoto = event?.message?.photo
+  if (!event.message.photo && !isWebp && !isVideo && (!sender || !sender.id || !chat || !msgID || !msgText || !message)) {
     console.log("Invalid event data");
     return;
   }
+//You reply bot with img
+  if (isNormalPhoto || isWebp) {
+    queueRequest(handleImage, chat, msgID, event.message.photo,event.message);
+  }
+  if(isVideo){
+    queueRequest(handleVideo, chat, msgID, event.message.media,event.message);
+  }
 
-  if (event.message.mentioned || (event.message.isPrivate)) {
+  if (!isNormalPhoto && !isWebp && !isVideo && (event.message.mentioned || (event.message.isPrivate))) {
     queueRequest(gemini, chat, msgID, msgText, message.senderId);
   }
 
   if (msgText.startsWith("/gif") || msgText.startsWith("gif")) {
     queueRequest(replyWithRandomGif, chat, msgID);
   }
+  // if (msgText.startsWith("/mmf") || msgText.startsWith("mmf")) {
+  //   // queueRequest(replyWithRandomGif, chat, msgID);
+  //   console.log(event.message)
+  // }
 
   if (msgText.startsWith("/fun") || msgText.startsWith("fun")) {
     queueRequest(replyWithFun, chat, msgID, message, sender);
