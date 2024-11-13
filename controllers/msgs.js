@@ -14,7 +14,9 @@ import { lyricsFinder } from "./Functions/lyrics.js";
 import { genButtons } from "./Functions/image-gens/buttons-image-gens.js";
 import { songDownloader } from "./Functions/yt2mp3/song.js";
 import { replyWithGlobalMenu } from "./Functions/global-settings-menu.js";
-import { handleImage ,handleVideo } from "./Functions/media-handler.js";
+import { handleBtnsMediaHandler, handleImage ,handleVideo } from "./Functions/media-handler.js";
+import { Api } from "telegram";
+import { setvalueData } from "./utils/localStorageUtils.js";
 
 // Queue for incoming events
 const queue = [];
@@ -45,18 +47,29 @@ async function processQueue() {
   isProcessingQueue = false;
 }
 
+// function  returnSignedPromise(msg,sender){
+//   return new Promise((resolve, reject) => {
+//     if(msg=="#signed"){
+//       resolve(sender.id)
+//     }
+//   });
+// }
+
 // Modify the eventPrint function to be used with the queue
 async function eventPrint(event) {
   const message = event.message;
+  
+
   const msgID = event.message.id;
   const msgText = message.text.toLowerCase();
   const peerId = event.message.peerId.chatId || event.message.peerId.channelId;
-  // console.log(event.message)
+  // console.log(event)
 
   const chat = await client.getInputEntity(event.message.peerId);
   const sender = await message.getSender();
-// console.log(event.message)
-const isVideo = event?.message?.media?.document?.mimeType=="video/mp4"
+// console.log("typeof event.message" ,typeof event.message)
+console.log("mimeType" ,event?.message?.media?.document?.mimeType)
+const isVideo = event?.message?.media?.document?.mimeType=="video/mp4" || "video/webm"
 const isWebp = event?.message?.media?.document?.mimeType=="image/webp"
 const isNormalPhoto = event?.message?.photo
   if (!event.message.photo && !isWebp && !isVideo && (!sender || !sender.id || !chat || !msgID || !msgText || !message)) {
@@ -64,24 +77,27 @@ const isNormalPhoto = event?.message?.photo
     return;
   }
 //You reply bot with img
-  if (isNormalPhoto || isWebp) {
-    queueRequest(handleImage, chat, msgID, event.message.photo,event.message);
-  }
-  if(isVideo){
-    queueRequest(handleVideo, chat, msgID, event.message.media,event.message);
+
+  if((isNormalPhoto || isWebp || isVideo)&& event.message.isPrivate && !msgText.startsWith("/")){
+    queueRequest(handleBtnsMediaHandler, chat, msgID,event.message,isVideo,sender.id);
   }
 
-  if (!isNormalPhoto && !isWebp && !isVideo && (event.message.mentioned || (event.message.isPrivate))) {
+  
+
+  if (!isNormalPhoto && !isWebp && !isVideo && (event.message.mentioned || (event.message.isPrivate)) && !msgText.startsWith("/")) {
     queueRequest(gemini, chat, msgID, msgText, message.senderId);
   }
 
+
+  if (msgText.startsWith("/isign")) {
+    queueRequest(handleImage, msgText.replace("/isign",""),message,msgID,chat,sender.id);
+  }
+  if (msgText.startsWith("/vsign")) {
+    queueRequest(handleVideo,chat, msgID,message,msgText.replace("/vsign",""),sender.id);
+  }
   if (msgText.startsWith("/gif") || msgText.startsWith("gif")) {
     queueRequest(replyWithRandomGif, chat, msgID);
   }
-  // if (msgText.startsWith("/mmf") || msgText.startsWith("mmf")) {
-  //   // queueRequest(replyWithRandomGif, chat, msgID);
-  //   console.log(event.message)
-  // }
 
   if (msgText.startsWith("/fun") || msgText.startsWith("fun")) {
     queueRequest(replyWithFun, chat, msgID, message, sender);
@@ -125,12 +141,16 @@ const isNormalPhoto = event?.message?.photo
   if (msgText.startsWith("/help") || msgText.startsWith("help")) {
     queueRequest(replyWithHelp, chat, msgID, msgText,sender.id);
   }
-  if (msgText.startsWith("/set") || msgText.startsWith("/set")) {
+  if (msgText.startsWith("/set") || msgText.startsWith("set")) {
     queueRequest(replyWithGlobalMenu, chat, msgID, msgText,sender.id);
   }
+
+
 }
 
 // Debounce the eventPrint function to reduce repetitive requests in quick succession
 const debouncedEventPrint = debounce(eventPrint, 500);
+
+
 
 export { debouncedEventPrint as eventPrint };

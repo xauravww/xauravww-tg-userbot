@@ -57,6 +57,7 @@ export async function replyWithStart(chat, msgId, message, sender) {
   }
 }
 
+
 export async function replyWithHelp(chat, msgId, message, userId) {
   globalchat[userId] = {
     chatId: chat.chatId,
@@ -65,12 +66,13 @@ export async function replyWithHelp(chat, msgId, message, userId) {
     chat,
     initialMsgId: null, // Initialize initialMsgId here
   };
+
   const buttons = [
     [
       Button.inline("AI Chatbot", Buffer.from(`ai-chatbot|${userId}`)),
       Button.inline("Random Gifs", Buffer.from(`random-gifs|${userId}`)),
     ],
-
+  
     [Button.inline("Image Generator", Buffer.from(`image-gen|${userId}`))],
     [Button.inline("Song Downloader", Buffer.from(`song|${userId}`))],
     [
@@ -81,7 +83,12 @@ export async function replyWithHelp(chat, msgId, message, userId) {
       Button.inline("Other", Buffer.from(`other|${userId}`)),
       Button.inline("Lyrics", Buffer.from(`lyrics|${userId}`)),
     ],
+    [
+      Button.inline("Sign Image", Buffer.from(`i-sign|${userId}`)),
+      Button.inline("Sign Video", Buffer.from(`v-sign|${userId}`)),
+    ],
   ];
+  
 
   // Send a message with buttons to the user
   const initialMsg = await client.sendMessage(chat, {
@@ -91,6 +98,7 @@ export async function replyWithHelp(chat, msgId, message, userId) {
     buttons: buttons,
     parseMode: "md2",
   });
+  globalchat[userId].initialMsgId = initialMsg?.id
 }
 
 
@@ -108,9 +116,31 @@ export async function ButtonHandler(event) {
   // // Access chat and msgId from globalchat
   const chat = globalchat[clickedUserId]?.chat || event.query.peer.userId;
   const msgId = globalchat[clickedUserId]?.msgId;
-
+  const initialMsgId = globalchat[clickedUserId]?.initialMsgId
   // Split the callback data to get the action and original userId
   const [action, originalUserId] = callbackData.split("|");
+
+   const buttons = [
+    [
+      Button.inline("AI Chatbot", Buffer.from(`ai-chatbot|${clickedUserId}`)),
+      Button.inline("Random Gifs", Buffer.from(`random-gifs|${clickedUserId}`)),
+    ],
+  
+    [Button.inline("Image Generator", Buffer.from(`image-gen|${clickedUserId}`))],
+    [Button.inline("Song Downloader", Buffer.from(`song|${clickedUserId}`))],
+    [
+      Button.inline("Userid", Buffer.from(`userid|${clickedUserId}`)),
+      Button.inline("Uptime & Ping", Buffer.from(`ping|${clickedUserId}`)),
+    ],
+    [
+      Button.inline("Other", Buffer.from(`other|${clickedUserId}`)),
+      Button.inline("Lyrics", Buffer.from(`lyrics|${clickedUserId}`)),
+    ],
+    [
+      Button.inline("Sign Image", Buffer.from(`i-sign|${clickedUserId}`)),
+      Button.inline("Sign Video", Buffer.from(`v-sign|${clickedUserId}`)),
+    ],
+  ];
 
   // Ensure that only the user who initiated the process can click the button
   if (clickedUserId.toString() !== originalUserId.toString()) {
@@ -135,90 +165,121 @@ export async function ButtonHandler(event) {
   switch (action) {
     case "ai-chatbot":
       console.log("ai-chatbot button clicked");
-      await client.invoke(
-        new Api.messages.SetBotCallbackAnswer({
-          queryId: callbackQueryId,
-          message:
-            "There are 2 ways to ask in any language: \n1. /ask What is the capital of India  \n2. Replying to bot messages will also work. \n\n\n If u got any error like too many requests then please try again.",
-          alert: true,
-        })
-      );
+      await client.editMessage(chat,{
+        message:initialMsgId,
+        text: `There are 2 ways to ask in any language: \n1. /ask What is the capital of India  \n2. Replying to bot messages will also work. \n\n\n If u got any error like too many requests then please try again.`,
+        buttons:[
+          Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
+        ],
+        parseMode: "md2",
+      })
       break;
     case "random-gifs":
       console.log("random gifs button clicked");
-      await client.invoke(
-        new Api.messages.SetBotCallbackAnswer({
-          queryId: callbackQueryId,
-          message:
-            "Use command /gif \nThis command doesn't need any extra query to be passed , this will generate a random gif",
-          alert: true,
-        })
-      );
+      await client.editMessage(chat,{
+        message:initialMsgId,
+        text:  "Use command /gif \nThis command doesn't need any extra query to be passed , this will generate a random gif",
+        buttons:[
+          Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
+        ],
+        parseMode: "md2",
+      })
       break;
     case "image-gen":
       console.log("image-gen button clicked");
-      await client.invoke(
-        new Api.messages.SetBotCallbackAnswer({
-          queryId: callbackQueryId,
-          message:
-            "Use /gen command with query params: \ne.g. /gen a cat \nDisclaimer: There is no image censorship filters in Schnell and Replicate model , so it might generate some inappropriate things.",
-          alert: true,
-        })
-      );
+      await client.editMessage(chat,{
+        message:initialMsgId,
+        text:  "Use /gen command with query params: \ne.g. /gen a cat \nDisclaimer: There is no image censorship filters in Schnell and Replicate model , so it might generate some inappropriate things.",
+        buttons:[
+          Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
+        ],
+        parseMode: "md2",
+      })
       break;
     case "ping":
       console.log("image-gen button clicked");
-      await client.invoke(
-        new Api.messages.SetBotCallbackAnswer({
-          queryId: callbackQueryId,
-          message:
-            "Use /ping command to check server uptime and response time.",
-          alert: true,
-        })
-      );
+      await client.editMessage(chat,{
+        message:initialMsgId,
+        text:   "Use /ping command to check server uptime and response time.",
+        buttons:[
+          Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
+        ],
+        parseMode: "md2",
+      })
       break;
     case "userid":
       console.log("image-gen button clicked");
-      await client.invoke(
-        new Api.messages.SetBotCallbackAnswer({
-          queryId: callbackQueryId,
-          message: "1. Use /userid command to get your userid. \n2. Forward any user message directly to bot",
-          alert: true,
-        })
-      );
+      await client.editMessage(chat,{
+        message:initialMsgId,
+        text:  "1. Use /userid command to get your userid. \n2. Forward any user message directly to bot",
+        buttons:[
+          Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
+        ],
+        parseMode: "md2",
+      })
       break;
     case "song":
       console.log("image-gen button clicked");
-      await client.invoke(
-        new Api.messages.SetBotCallbackAnswer({
-          queryId: callbackQueryId,
-          message:
-            "Use /song command with query params \n\ne.g. /song angrezi beat yo yo honey \n\nThis will send you mp3 file of that song directly from youtube. \n\nNote: Sometimes it can take 10-15 seconds.",
-          alert: true,
-        })
-      );
+      await client.editMessage(chat,{
+        message:initialMsgId,
+        text:  "Use /song command with query params \n\ne.g. /song angrezi beat yo yo honey \n\nThis will send you mp3 file of that song directly from youtube. \n\nNote: Sometimes it can take 10-15 seconds.",
+        buttons:[
+          Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
+        ],
+        parseMode: "md2",
+      })
       break;
     case "lyrics":
       console.log("image-gen button clicked");
-      await client.invoke(
-        new Api.messages.SetBotCallbackAnswer({
-          queryId: callbackQueryId,
-          message:
-            "Use /lyrics command with query params \n\ne.g. /lyrics song_name by artist_name \n\nNote: Regional songs are not supported",
-          alert: true,
-        })
-      );
+      await client.editMessage(chat,{
+        message:initialMsgId,
+        text:   "Use /lyrics command with query params \n\ne.g. /lyrics song_name by artist_name \n\nNote: Regional songs are not supported",
+        buttons:[
+          Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
+        ],
+        parseMode: "md2",
+      })
+      break;
+    case "i-sign":
+      console.log("img-sign button clicked");
+      await client.editMessage(chat,{
+        message:initialMsgId,
+        text:    "Returns sticker file which we can use in @Stickers bot for static stickers\n/isign overlayMsg,color,fontSize\nAll fields are optional\nYou can simply leave blank if you dont want to display\ne.g. /isign ,,,100",
+        buttons:[
+          Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
+        ],
+        parseMode: "md2",
+      })
+      break;
+    case "v-sign":
+      console.log("video-sign button clicked");
+      await client.editMessage(chat,{
+        message:initialMsgId,
+        text:    "Returns webm file which we can use in @Stickers bot for video stickers\n/vsign overlayMsg,color,fontSize,position\nAll fields are optional\nYou can simply leave blank if you dont want to display\ne.g. /vsign namastey,,20,100",
+        buttons:[
+          Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
+        ],
+        parseMode: "md2",
+      })
       break;
     case "other":
       console.log("image-gen button clicked");
-      await client.invoke(
-        new Api.messages.SetBotCallbackAnswer({
-          queryId: callbackQueryId,
-          message:
-            "This bot also sends all my instagram reels from my dm to my telegram channel. (Not for public use as of now) \nOther cmds are: \n1. /about  \n2. /stop secret_password",
-          alert: true,
-        })
-      );
+      await client.editMessage(chat,{
+        message:initialMsgId,
+        text:   "This bot also sends all my instagram reels from my dm to my telegram channel. (Not for public use as of now) \nOther cmds are: \n1. /about  \n2. /stop secret_password",
+        buttons:[
+          Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
+        ],
+        parseMode: "md2",
+      })
+      break;
+    case "back":
+      await client.editMessage(chat,{
+        message:initialMsgId,
+        text: `<pre>Choose your option:</pre>`,
+        buttons:buttons,
+        parseMode: "md2",
+      })
       break;
 
     // default:

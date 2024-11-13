@@ -4,11 +4,7 @@ import { fileURLToPath } from "url";
 import { Button } from "telegram/tl/custom/button.js";
 import { CallbackQuery } from "telegram/events/CallbackQuery.js";
 import { generateImage3 } from "./flux-schnell-gen.js";
-import {
-  getvalueData,
-  setvalueData,
-  deletevalueData,
-} from "../../utils/localStorageUtils.js";
+
 import { genImage2 } from "./speed-gen.js";
 import { genImage4 } from "./replicate-gen.js";
 
@@ -45,7 +41,7 @@ export async function genButtons(userId, chat, msgId, message) {
       Button.inline("Fast Gen", Buffer.from(`flux-schnell|${userId}`)),
       Button.inline("Slow Gen", Buffer.from(`replicate-gen|${userId}`)),
     ],
-    [Button.inline("Multiple Gen", Buffer.from(`speed-gen|${userId}`))]
+    // [Button.inline("Multiple Gen", Buffer.from(`speed-gen|${userId}`))] // Will update this one after bug fixes
   ];
 
   // Send a message with buttons to the user

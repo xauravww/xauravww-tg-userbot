@@ -1,4 +1,3 @@
-import e from "express";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
@@ -6,7 +5,8 @@ const { createCanvas, loadImage } = require("@napi-rs/canvas");
 const axios = require("axios");
 const fs = require("fs").promises;
 
-export async function overlayTextOnImage(imageUrl, text, outputFilePath) {
+export async function overlayTextOnImage(imageUrl, text, outputFilePath, color, fontSizeGiven,positionY) {
+  console.log("positionY: " + positionY)
   return new Promise(async (resolve, reject) => {
     try {
       // Fetch the image using axios
@@ -23,36 +23,36 @@ export async function overlayTextOnImage(imageUrl, text, outputFilePath) {
       ctx.drawImage(img, 0, 0, img.width, img.height);
 
       // Set initial text properties
-      let fontSize = 120;
+      let fontSize = fontSizeGiven || 120;
       ctx.font = `${fontSize}px Arial`;
       ctx.textAlign = "center";
-      ctx.fillStyle = "white"; // Text color
+      ctx.fillStyle = color || "white"; // Text color
       ctx.strokeStyle = "black"; // Outline color
-      ctx.lineWidth = 3; // Outline width
+      ctx.lineWidth = 3; // Outline width for text
 
-      // Measure text and adjust font size if necessary
+      // Adjust font size to fit within the canvas width
       while (ctx.measureText(text).width > canvas.width * 0.9) {
         fontSize -= 5;
-        ctx.font = `${fontSize}px Arial`; // Use the same font family for consistency
+        ctx.font = `${fontSize}px Arial`;
       }
 
-      // Calculate text position (centered at bottom)
+      // Calculate text position (centered at top)
       const textX = canvas.width / 2;
-      const textY = canvas.height - 50;
+      const textY = fontSize + 10; // Position slightly below the top
 
-      // Draw background rectangle behind text
+      // Draw background rectangle directly behind the text, with no padding
       const textWidth = ctx.measureText(text).width;
-      const padding = 20;
-      // ctx.fillStyle = "rgba(0, 0, 0, 0.6)"; // Semi-transparent black background color
-      // ctx.fillRect(
-      //   textX - textWidth / 2 - padding,
-      //   textY - fontSize - padding,
-      //   textWidth + padding * 2,
-      //   fontSize + padding * 2
-      // );
+      ctx.fillStyle = "rgba(0, 0, 0, 0.5)"; // Semi-transparent black background
+      ctx.fillRect(
+        textX - textWidth / 2,
+        textY - fontSize,
+        textWidth,
+        fontSize
+      );
 
       // Draw the text with outline and fill
       ctx.strokeText(text, textX, textY);
+      ctx.fillStyle = color || "white";
       ctx.fillText(text, textX, textY);
 
       // Convert canvas to a PNG buffer
@@ -64,15 +64,8 @@ export async function overlayTextOnImage(imageUrl, text, outputFilePath) {
       console.log(`Image canvas saved to ${outputFilePath}`);
       resolve(outputFilePath);
     } catch (error) {
-      console.error("Error overlaying image:", error);
+      console.error("Error overlaying text on image:", error);
       reject(error);
     }
   });
 }
-
-// Example usage
-// overlayTextOnImage(
-//   "https://example.com/path/to/image.webp",
-//   "Sample text overlay",
-//   "./output-image.png"
-// );

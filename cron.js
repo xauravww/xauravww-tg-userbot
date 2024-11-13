@@ -9,7 +9,8 @@ dotenv.config({ path: path.resolve(".env") })
 const backendUrl = process.env.RENDER_BACKEND_URL
 
 const job = new cron.CronJob("0 */13 * * * *", function () {
-  // This function will be executed every 14 minutes.
+try {
+    // This function will be executed every 14 minutes.
   // console.log("Restarting server")
 
   // Perform an HTTPS GET request to hit any backend api.
@@ -24,9 +25,14 @@ const job = new cron.CronJob("0 */13 * * * *", function () {
       }
     })
     .on("error", (err) => {
-      console.error("Error during Restart:", err.message)
+      throw new Error("Error during Restart:", err.message)
     })
-})
+
+} catch (error) {
+  console.log(error)
+}
+}
+)
 
 // Export the cron job.
 export { job }
