@@ -233,7 +233,7 @@ export async function ButtonHandler(event) {
       console.log("image-gen button clicked");
       await client.editMessage(chat,{
         message:initialMsgId,
-        text:   "Use /lyrics command with query params \n\ne.g. /lyrics song_name by artist_name \n\nNote: Regional songs are not supported",
+        text:   "Use /lyrics command with query params \n\ne.g. /lyrics song_name by artist_name \n\nNote: Regional songs are not supported\n\n😵😵This feature is in maintenance mode",
         buttons:[
           Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
         ],
@@ -244,7 +244,7 @@ export async function ButtonHandler(event) {
       console.log("img-sign button clicked");
       await client.editMessage(chat,{
         message:initialMsgId,
-        text:    "Returns sticker file which we can use in @Stickers bot for static stickers\n/isign overlayMsg,color,fontSize\nAll fields are optional\nYou can simply leave blank if you dont want to display\ne.g. /isign ,,,100",
+        text:    "Returns sticker file which we can use in @Stickers bot for static stickers\n/isign overlayMsg,color,fontSize\nAll fields are optional\nYou can simply leave blank if you dont want to give specific custom arguments\ne.g. <pre>/isign ,,,100</pre>\n<pre>/isign hello,red,50,100</pre>\n<pre>/isign</pre>\nYou can use any variation you want\nYou can use this in direct message or in any group(having admin rights otherwise it can't access group history and will show unexpected results)\nTry and test any type of color (explained in detail in video sign help) except RGB format",
         buttons:[
           Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
         ],
@@ -255,7 +255,7 @@ export async function ButtonHandler(event) {
       console.log("video-sign button clicked");
       await client.editMessage(chat,{
         message:initialMsgId,
-        text:    "Returns webm file which we can use in @Stickers bot for video stickers\n/vsign overlayMsg,color,fontSize,position\nAll fields are optional\nYou can simply leave blank if you dont want to display\ne.g. /vsign namastey,,20,100",
+        text:    "Returns webm file which we can use in @Stickers bot for video stickers\n<pre><code>/vsign overlayMsg ,color ,fontSize ,position</code></pre>\nAll fields are optional\nYou can simply leave blank if you dont want to give that custom argument\ne.g. <pre><code>/vsign namastey,,20,100</code></pre>\n<pre><code>/vsign hello,red,20,100</code></pre>\n<pre><code>/vsign</code></pre>\nYou can try out your own variations\nNote: I set a limit of 5MB/upload\nAlso decompresses video and clip it upto 3 seconds for telegram optimized video stickers\nYou can use this in direct message or in any group(having admin rights otherwise it can't access group history and will show unexpected results)\n\nSome popular colors input:\n<pre>black, white, red, green, blue, yellow, cyan, magenta, aqua, fuchsia, gray, lime, maroon, navy, olive, purple, silver, teal or any type of #hex color like #ffffff etc.\nBut RGB color won't work</pre>\n\nPosition can take 2 type of values:\n<pre>1. bottom 50</pre>\n<pre>2. top 50</pre>\nYou can give any value after top or bottom which decides it Y axis position of text overlay.\nPS:Keep it small",
         buttons:[
           Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
         ],

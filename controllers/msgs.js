@@ -68,8 +68,7 @@ async function eventPrint(event) {
   const chat = await client.getInputEntity(event.message.peerId);
   const sender = await message.getSender();
 // console.log("typeof event.message" ,typeof event.message)
-console.log("mimeType" ,event?.message?.media?.document?.mimeType)
-const isVideo = event?.message?.media?.document?.mimeType=="video/mp4" || "video/webm"
+const isVideo = event?.message?.media?.document?.mimeType=="video/mp4" || event?.message?.media?.document?.mimeType=="video/webm"
 const isWebp = event?.message?.media?.document?.mimeType=="image/webp"
 const isNormalPhoto = event?.message?.photo
   if (!event.message.photo && !isWebp && !isVideo && (!sender || !sender.id || !chat || !msgID || !msgText || !message)) {
@@ -78,7 +77,7 @@ const isNormalPhoto = event?.message?.photo
   }
 //You reply bot with img
 
-  if((isNormalPhoto || isWebp || isVideo)&& event.message.isPrivate && !msgText.startsWith("/")){
+  if((isNormalPhoto || isWebp || isVideo)&& event.message.isPrivate){
     queueRequest(handleBtnsMediaHandler, chat, msgID,event.message,isVideo,sender.id);
   }
 

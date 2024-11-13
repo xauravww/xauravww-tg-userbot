@@ -121,7 +121,7 @@ const msgFwd = await client.getMessages(chat, {ids:msgIdNew})
       })
       .catch(async (err) => {
         await client.sendMessage(chat, {
-          message: "Please reply to img or stickers using /isign cmnd",
+          message: "Please reply to img or stickers using /isign cmnd\nSee /help for more detailed information",
           replyTo: msgId,
           parseMode: "md2",
         });
@@ -130,7 +130,7 @@ const msgFwd = await client.getMessages(chat, {ids:msgIdNew})
     // await client.deleteMessages(chat, messageToDelete); //revoke issue so commenting
   } catch (error) {
     await client.sendMessage(chat, {
-      message: "Please reply to img or stickers using /isign cmnd",
+      message: "Please reply to img or stickers using /isign cmnd\nSee /help for more detailed information",
       replyTo: msgId,
       parseMode: "md2",
     });
@@ -249,7 +249,7 @@ export async function handleVideo(chat, msgId, messageObj,msgWithOptions,origina
       return;
     }
     await client.sendMessage(chat, {
-        message: "Please reply to video or gifs using /vsign cmnd",
+        message: "Please reply to video or gifs using /vsign cmnd\nSee /help for more information",
         replyTo: msgId,
         parseMode: "md2",
       });
@@ -299,7 +299,7 @@ async function ButtonHandler(event) {
   switch (action) {
     case "sign-image":
       const signGenMessage = await client.editMessage(chat, {
-        text: "Reply this img/sticker with the sign message \ne.g. /isign hello world",
+        text: "Reply this img/sticker with the sign message \ne.g. <pre>/isign hello world,white,50</pre>\nSee /help for more detailed information",
         message: globalchat[originalUserId]?.initialMsgId,
         parseMode: "md2",
       });
@@ -307,7 +307,7 @@ async function ButtonHandler(event) {
       break;
     case "sign-video":
       await client.editMessage(chat, {
-        text: "Reply this video/gif with the sign message \nCommand: /vsign message,color,fontSize,position \nUse \help for more information",
+        text: "Reply this video/gif with the sign message \nCommand: <pre>/vsign hello world,white,50,50</pre>\nUse /help for more detailed information",
         message: globalchat[originalUserId]?.initialMsgId,
         parseMode: "md2",
       });
