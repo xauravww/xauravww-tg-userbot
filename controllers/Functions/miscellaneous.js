@@ -18,7 +18,7 @@ export async function replyWithUserId(chat, msgId, message, fwdFrom) {
         parseMode: "md2",
       });
     } else {
-      const msgText = fwdId? `Forwarded message userid: <code>${fwdId}</code> \n[Link to his/her profile](tg://openmessage?user_id=${fwdId}) \nProfile will only open in case you have intercated or visited user profile at least once in a group or using direct messages or whatever.` : `Userid is hidden by user. \nBut you can still get that id using unoffical Telegram apps like Telegraph or using userbots.`;
+      const msgText = fwdId? `Forwarded message userid: <code>${fwdId}</code> \n[Link to his/her profile](tg://openmessage?user_id=${fwdId}) \nProfile will only open in case you have interacted or visited user profile at least once in a group or using direct messages or whatever.` : `Userid is hidden by user. \nBut you can still get that id using unoffical Telegram apps like Telegraph or using userbots.`;
       await client.sendMessage(chat, {
         message: msgText,
         replyTo: msgId,
