@@ -1,10 +1,10 @@
-# 🌟 @xaurav_assistant_bot 🌟
+# 🌟 @funwalabot 🌟
 
 ## Telegram Bot Designed for @shhhhhfirkoih
 
-Live Link : `https://t.me/xaurav_assistant_bot`
+Live Link : `https://t.me/funwalabot`
 
-Welcome to the official repository of `@xaurav_assistant_bot` This bot is designed to cater to a variety of tasks and functionalities for Telegram users, whether in group chats, channels, or direct messages.
+Welcome to the official repository of `@funwalabot` (formerly 🪦xaurav_assistant_bot 🪦) This bot is designed to cater to a variety of tasks and functionalities for Telegram users, whether in group chats, channels, or direct messages.
 
 ---
 
@@ -92,7 +92,7 @@ Transfer Instagram reels to Telegram channels with meta tags for easy querying.
 ## 🚧 Status
 
 - Bot Status: The bot is currently operational and running
-- Live Link : `https://t.me/xaurav_assistant_bot`
+- Live Link : `https://t.me/funwalabot`
 
 ---
 
@@ -113,29 +113,35 @@ Follow these steps to set up and run the bot:
 
 ## 🗂 Environment Structure
 
-    API_KEY="your_api_key"
-    API_HASH="your_api_hash"
-    SESSION_STRING="your_session_string"
-    CRASH_PASS="your_crash_password"
-    GEMINI_API_KEY="your_gemini_api_key"
-    RENDER_BACKEND_URL="your_render_backend_url"
-    VERIFY_TOKEN="saurav"
-    BOT_STATUS_MESSAGE="Bot live status and about information"
-    TELEGRAM_REELS_CHANNEL_USERNAME="username without @"
-    GIFS_CHANNEL_USERNAME="username of channel without @ containing only gifs"
-    FILTERED_TEXT_GEMINI="add extra prompt text to apply filters to gemini output"
-    FREE_IMG_GEN_API="paste endpoint url here"
-    REPLICATE_API_VERSION="some_api_version"
-    REPLICATE_API_ENDPOINT="paste endpoint here"
-    FLUX_SCHNELL_API_ENDPOINT="paste endpoint here"
-    FLUX_SCHNELL_API_MODEL_SUFFIX="paste endpoint here"
-    DEV_USERNAME="@shhhhhfirkoih"
-    YT_DOWNLOADER_API_URL="api endpoint here"
-    MODEL_NAME_GEMINI="model name"
-    SYSTEM_INSTRUCTIONS_GEMINI="paste your system instructions"
-    OWNER_USERID="paste userid"
+      API_KEY="your_api_key"
+      API_HASH="your_api_hash"
+      SESSION_STRING="your_session_string"
+      CRASH_PASS="your_crash_password"
+      GEMINI_API_KEY="your_gemini_api_key"
+      RENDER_BACKEND_URL="your_render_backend_url"
+      VERIFY_TOKEN="saurav"
+      BOT_STATUS_MESSAGE="Bot live status and about information"
+      TELEGRAM_REELS_CHANNEL_USERNAME="username without @"
+      GIFS_CHANNEL_USERNAME="username of channel without @ containing only gifs"
+      FILTERED_TEXT_GEMINI="add extra prompt text to apply filters to gemini output"
+      FREE_IMG_GEN_API="paste endpoint url here"
+      REPLICATE_API_VERSION="some_api_version"
+      REPLICATE_API_ENDPOINT="paste endpoint here"
+      FLUX_SCHNELL_API_ENDPOINT="paste endpoint here"
+      FLUX_SCHNELL_API_MODEL_SUFFIX="paste endpoint here"
+      DEV_USERNAME="@shhhhhfirkoih"
+      YT_DOWNLOADER_API_URL="api endpoint here"
+      MODEL_NAME_GEMINI="model name"
+      SYSTEM_INSTRUCTIONS_GEMINI="paste your system instructions"
+      OWNER_USERID="paste userid"
+      DEV2_USERNAME ="aatma_2502"
+      MY_AUDIO_CHANNEL ="username"
+      REDIS_USERNAME = "username"
+      REDIS_PASSWORD = "password"
+      REDIS_HOST = "host url"
+      REDIS_PORT = "port number"
 
-4. Run the Bot
+1. Run the Bot
    node server.js
 
    ***

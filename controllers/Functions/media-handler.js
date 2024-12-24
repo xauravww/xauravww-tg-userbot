@@ -14,13 +14,16 @@ const globalchat = {} ;
 
 import { Api } from "telegram";
 import path from "path";
+import { message } from "telegram/client/index.js";
+import { redisClient } from "../utils/redis.js";
 
 export async function handleBtnsMediaHandler(
   chat,
   msgId,
   message,
   isVideo,
-  userId
+  userId,
+  isVoiceOrAudio
 ) {
   // Store data in the globalchat variable
   globalchat[userId] = {
@@ -40,12 +43,20 @@ export async function handleBtnsMediaHandler(
       ),
     ],
   ];
+  const buttons2 = [
+    [
+      Button.inline(
+        "Save to my Database",
+        Buffer.from(`save-audio|${userId}`)
+      ),
+    ],
+  ];
 
   // Send a message with buttons to the user
   const initialMsg = await client.sendMessage(chat, {
     message: `What do you want to do with this media?:`,
     replyTo: msgId,
-    buttons: buttons,
+    buttons: isVoiceOrAudio ? buttons2 : buttons,
     parseMode: "md2",
   });
 
@@ -54,6 +65,34 @@ export async function handleBtnsMediaHandler(
   // setvalueData(userId, initialMsg.id);
 }
 
+
+export async function handleFeed(msgText, messageObj, msgId, chat,originalUserId){
+console.log("handled feed successfully")
+console.log(msgText);
+const messageHavingAFile = await client.getMessages(chat, {ids:messageObj.replyTo.replyToMsgId})
+// console.log(messageObj.replyTo.replyToMsgId)
+console.log(messageHavingAFile)
+const media = messageHavingAFile[0]?.media?.document
+
+const msgFwd = await client.invoke(new Api.messages.SendMedia(
+  {
+    media : new Api.InputDocument({
+      accessHash: media.accessHash,
+      fileReference: media.fileReference,
+      id: media.id,
+    }),
+    message: msgText,
+    peer: process.env.MY_AUDIO_CHANNEL,
+
+    
+  }
+))
+console.log("msgFwd", msgFwd)
+await redisClient.lPush('inlineAudioArr',String(msgFwd?.updates[0]?.id)).then(()=>{
+  console.log("InlineAudioArr redis updated successfully")
+})
+await client.sendMessage(chat,{message:"Succesfully saved to our database",replyTo:msgId})
+}
 
 
 export async function handleImage(msgText, messageObj, msgId, chat,originalUserId) {
@@ -308,6 +347,14 @@ async function ButtonHandler(event) {
     case "sign-video":
       await client.editMessage(chat, {
         text: "Reply this video/gif with the sign message \nCommand: <pre>/vsign hello world,white,50,50</pre>\nUse /help for more detailed information",
+        message: globalchat[originalUserId]?.initialMsgId,
+        parseMode: "md2",
+      });
+
+      break;
+    case "save-audio":
+      await client.editMessage(chat, {
+        text: "Reply this audio with the captions to easy searching \nCommand: <pre>/feed your_captions </pre>\nUse /help for more detailed information",
         message: globalchat[originalUserId]?.initialMsgId,
         parseMode: "md2",
       });

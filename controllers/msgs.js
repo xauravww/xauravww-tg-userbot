@@ -14,9 +14,10 @@ import { lyricsFinder } from "./Functions/lyrics.js";
 import { genButtons } from "./Functions/image-gens/buttons-image-gens.js";
 import { songDownloader } from "./Functions/yt2mp3/song.js";
 import { replyWithGlobalMenu } from "./Functions/global-settings-menu.js";
-import { handleBtnsMediaHandler, handleImage ,handleVideo } from "./Functions/media-handler.js";
+import { handleBtnsMediaHandler, handleImage ,handleVideo,handleFeed } from "./Functions/media-handler.js";
 import { Api } from "telegram";
 import { setvalueData } from "./utils/localStorageUtils.js";
+import e from "express";
 
 // Queue for incoming events
 const queue = [];
@@ -57,6 +58,14 @@ async function processQueue() {
 
 // Modify the eventPrint function to be used with the queue
 async function eventPrint(event) {
+// console.log(event);
+  // console.log("event.className",event?.originalUpdate?.className)
+
+  if(!event.message){
+    console.log("no msg defined for event");
+    return;
+  }
+    
   const message = event.message;
   
 
@@ -71,23 +80,34 @@ async function eventPrint(event) {
 const isVideo = event?.message?.media?.document?.mimeType=="video/mp4" || event?.message?.media?.document?.mimeType=="video/webm"
 const isWebp = event?.message?.media?.document?.mimeType=="image/webp"
 const isNormalPhoto = event?.message?.photo
-  if (!event.message.photo && !isWebp && !isVideo && (!sender || !sender.id || !chat || !msgID || !msgText || !message)) {
+const isVoiceOrAudio = event?.message?.media?.document?.mimeType=="audio/mpeg" || event?.message?.media?.document?.mimeType=="audio/ogg"
+const isSenderABot = event?.message?.viaBotId == null
+// console.log(event?.message?.media?.document?.mimeType)
+// audio/mpeg or audio/ogg
+  if (!isVoiceOrAudio && !event.message.photo && !isWebp && !isVideo && (!sender || !sender.id || !chat || !msgID || !msgText || !message)) {
     console.log("Invalid event data");
     return;
   }
-//You reply bot with img
 
-  if((isNormalPhoto || isWebp || isVideo)&& event.message.isPrivate){
-    queueRequest(handleBtnsMediaHandler, chat, msgID,event.message,isVideo,sender.id);
+  if(isVoiceOrAudio && isSenderABot){
+    queueRequest(handleBtnsMediaHandler,chat, msgID,event.message,isVideo,sender.id,isVoiceOrAudio)
+  }
+
+
+  if((isNormalPhoto || isWebp || isVideo)&& event.message.isPrivate && isSenderABot){
+    queueRequest(handleBtnsMediaHandler, chat, msgID,event.message,isVideo,sender.id,isVoiceOrAudio);
   }
 
   
 
-  if (!isNormalPhoto && !isWebp && !isVideo && (event.message.mentioned || (event.message.isPrivate)) && !msgText.startsWith("/")) {
+  if (!isVoiceOrAudio && !isNormalPhoto && !isWebp && !isVideo && (event.message.mentioned || (event.message.isPrivate)) && !msgText.startsWith("/")) {
     queueRequest(gemini, chat, msgID, msgText, message.senderId);
   }
 
 
+  if (msgText.startsWith("/feed")) {
+    queueRequest(handleFeed, msgText.replace("/feed",""),message,msgID,chat,sender.id);
+  }
   if (msgText.startsWith("/isign")) {
     queueRequest(handleImage, msgText.replace("/isign",""),message,msgID,chat,sender.id);
   }
