@@ -12,7 +12,7 @@ use `/help` for all commands
 
 <details>
 <summary>Expand to View Demo</summary>
-<img src="https://rawcdn.githack.com/sauravtechno/main-d/dad636f2ca1a4f9f367cc3692cf2bb5ccb3823f9/assets/test/help_menu.webp" alt="Help Menu">
+<img src="https://cdn.jsdelivr.net/gh/sauravtechno/main-d@main/assets/test/help_menu.webp" alt="Help Menu">
 </details>
 
 # 📜 Features and Commands
@@ -23,7 +23,7 @@ use `/help` for all commands
 
 <details>
 <summary>Expand to View Demo</summary>
-<img src="https://rawcdn.githack.com/sauravtechno/main-d/dad636f2ca1a4f9f367cc3692cf2bb5ccb3823f9/assets/test/ping.webp" alt="Ping Command">
+<img src="https://cdn.jsdelivr.net/gh/sauravtechno/main-d@main/assets/test/ping.webp" alt="Ping Command">
 </details>
 
 ### YouTube to MP3
@@ -32,7 +32,7 @@ use `/help` for all commands
 
 <details>
 <summary>Expand to View Demo</summary>
-<img src="https://rawcdn.githack.com/sauravtechno/main-d/dad636f2ca1a4f9f367cc3692cf2bb5ccb3823f9/assets/test/SONG.webp" alt="Song Command">
+<img src="https://cdn.jsdelivr.net/gh/sauravtechno/main-d@main/assets/test/SONG.webp" alt="Song Command">
 </details>
 
 ### AI Chatbot
@@ -41,7 +41,7 @@ use `/help` for all commands
 
 <details>
 <summary>Expand to View Demo</summary>
-<img src="https://rawcdn.githack.com/sauravtechno/main-d/dad636f2ca1a4f9f367cc3692cf2bb5ccb3823f9/assets/test/ai-chat.webp" alt="AI Chat Command">
+<img src="https://cdn.jsdelivr.net/gh/sauravtechno/main-d@main/assets/test/ai-chat.webp" alt="AI Chat Command">
 </details>
 
 ### GIF Generator
@@ -50,7 +50,7 @@ use `/help` for all commands
 
 <details>
 <summary>Expand to View Demo</summary>
-<img src="https://rawcdn.githack.com/sauravtechno/main-d/dad636f2ca1a4f9f367cc3692cf2bb5ccb3823f9/assets/test/GIF.webp" alt="GIF Command">
+<img src="https://cdn.jsdelivr.net/gh/sauravtechno/main-d@main/assets/test/GIF.webp" alt="GIF Command">
 </details>
 
 ### Lyrics Finder
@@ -63,7 +63,7 @@ use `/help` for all commands
 
 <details>
 <summary>Expand to View Demo</summary>
-<img src="https://rawcdn.githack.com/sauravtechno/main-d/dad636f2ca1a4f9f367cc3692cf2bb5ccb3823f9/assets/test/ai-chat.webp" alt="Generate AI Image">
+<img src="https://cdn.jsdelivr.net/gh/sauravtechno/main-d@main/assets/test/ai-chat.webp" alt="Generate AI Image">
 </details>
 
 ### Reel Transfer
@@ -72,7 +72,7 @@ Transfer Instagram reels to Telegram channels with meta tags for easy querying.
 
 <details>
 <summary>Expand to View Demo</summary>
-<img src="https://raw.githubusercontent.com/sauravtechno/main-d/0154331aa45d879016e87b010bad7563deadf060/assets/test/main-reel-webp.webp" alt="Reel Forwarding">
+<img src="https://cdn.jsdelivr.net/gh/sauravtechno/main-d@main/assets/test/main-reel-webp.webp" alt="Reel Forwarding">
 </details>
 
 ### User ID Retrieval
