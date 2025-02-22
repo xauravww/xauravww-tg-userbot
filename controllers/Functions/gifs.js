@@ -18,12 +18,12 @@ export async function replyWithRandomGif(chat, msgID) {
     }
 
     const randomNumber = getRandomInt(0, 1000);
-    const result = await client.invoke(
-      new Api.channels.GetMessages({
-        channel: process.env.GIFS_CHANNEL_USERNAME,
-        id: [randomNumber]
-      })
-    );
+    // const result = await client.invoke(
+    //   new Api.channels.GetMessages({
+    //     channel: process.env.GIFS_CHANNEL_USERNAME,
+    //     id: [randomNumber]
+    //   })
+    // );
     
 
     await client

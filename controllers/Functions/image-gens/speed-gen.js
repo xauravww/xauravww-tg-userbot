@@ -12,10 +12,10 @@ export async function genImage2(userId, chat, msgId, message, count, initialMess
   console.log("initial msg id", initialMessageId);
 
   try {
-    await client.sendMessage(chat, {
-      message: "Image generation is underway. Please hold on...",
-      replyTo: msgId,
-    });
+    // await client.sendMessage(chat, {
+    //   message: "Image generation is underway. Please hold on...",
+    //   replyTo: msgId,
+    // });
 
     console.log("Initial message sent: Image generation is underway.");
 
@@ -71,10 +71,11 @@ export async function genImage2(userId, chat, msgId, message, count, initialMess
         fs.unlinkSync(tempImagePath);
       }
 
-      await client.editMessage(chat, {
-        message: initialMessageId,
-        text: `Image generation complete!`,
-      });
+      // await client.editMessage(chat, {
+      //   message: initialMessageId,
+      //   text: `Image generation complete!`,
+      // });
+      await client.deleteMessages(chat, [initialMessageId], {revoke:true});
       console.log("All images sent to the chat and temporary files deleted.");
     } else {
       console.log("Image generation failed or did not complete in time.");

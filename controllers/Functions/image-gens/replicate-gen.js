@@ -15,10 +15,10 @@ export async function genImage4(userId, chat, msgId, message,initialMessageId) {
 
   try {
     // Send initial message indicating image generation is in progress
-    const initialMessage = await client.sendMessage(chat, {
-      message: "Image generation is underway. Please hold on...",
-      replyTo: msgId,
-    });
+    // const initialMessage = await client.sendMessage(chat, {
+    //   message: "Image generation is underway. Please hold on...",
+    //   replyTo: msgId,
+    // });
 
     console.log("Initial message sent: Image generation is underway.");
 
@@ -59,10 +59,11 @@ export async function genImage4(userId, chat, msgId, message,initialMessageId) {
     fs.writeFileSync(tempImagePath, convertedImageBuffer);  // Save the converted image
 
     // Send the converted image to the chat
-    await client.editMessage(chat, {
-        message: initialMessageId,
-        text: `Image generation complete!`,
-      });
+    // await client.editMessage(chat, {
+    //     message: initialMessageId,
+    //     text: `Image generation complete!`,
+    //   });
+    await client.deleteMessages(chat, [initialMessageId], {revoke:true});
     await client.sendFile(chat, {
       file: tempImagePath,
       caption: `<code>${prompt}</code>`,

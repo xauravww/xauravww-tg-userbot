@@ -8,16 +8,14 @@ import { client, connectClient, startSeconds } from "../client-init.js";
 import { replyWithPing } from "./Functions/ping.js";
 import { stopServer } from "./Functions/crash.js";
 import { replyWithRandomGif } from "./Functions/gifs.js";
-import { replyWithFun, replyWithUserId, replyWithAbout,replyWithStart, replyWithHelp } from "./Functions/miscellaneous.js";
+import { replyWithFun, replyWithUserId, replyWithAbout, replyWithStart, replyWithHelp } from "./Functions/miscellaneous.js";
 import { gemini } from "./Functions/gemini/query_gemini-api.js";
 import { lyricsFinder } from "./Functions/lyrics.js";
 import { genButtons } from "./Functions/image-gens/buttons-image-gens.js";
 import { songDownloader } from "./Functions/yt2mp3/song.js";
 import { replyWithGlobalMenu } from "./Functions/global-settings-menu.js";
-import { handleBtnsMediaHandler, handleImage ,handleVideo,handleFeed } from "./Functions/media-handler.js";
-import { Api } from "telegram";
-import { setvalueData } from "./utils/localStorageUtils.js";
-import e from "express";
+import { handleBtnsMediaHandler, handleImage, handleVideo, handleFeed } from "./Functions/media-handler.js";
+import axios from "axios";
 
 // Queue for incoming events
 const queue = [];
@@ -58,16 +56,16 @@ async function processQueue() {
 
 // Modify the eventPrint function to be used with the queue
 async function eventPrint(event) {
-// console.log(event);
+  // console.log(event);
   // console.log("event.className",event?.originalUpdate?.className)
 
-  if(!event.message){
+  if (!event.message) {
     console.log("no msg defined for event");
     return;
   }
-    
+
   const message = event.message;
-  
+
 
   const msgID = event.message.id;
   const msgText = message.text.toLowerCase();
@@ -76,43 +74,56 @@ async function eventPrint(event) {
 
   const chat = await client.getInputEntity(event.message.peerId);
   const sender = await message.getSender();
-// console.log("typeof event.message" ,typeof event.message)
-const isVideo = event?.message?.media?.document?.mimeType=="video/mp4" || event?.message?.media?.document?.mimeType=="video/webm"
-const isWebp = event?.message?.media?.document?.mimeType=="image/webp"
-const isNormalPhoto = event?.message?.photo
-const isVoiceOrAudio = event?.message?.media?.document?.mimeType=="audio/mpeg" || event?.message?.media?.document?.mimeType=="audio/ogg"
-const isSenderABot = event?.message?.viaBotId == null
-// console.log(event?.message?.media?.document?.mimeType)
-// audio/mpeg or audio/ogg
+  // console.log("typeof event.message" ,typeof event.message)
+  const isVideo = event?.message?.media?.document?.mimeType == "video/mp4" || event?.message?.media?.document?.mimeType == "video/webm"
+  const isWebp = event?.message?.media?.document?.mimeType == "image/webp"
+  const isNormalPhoto = event?.message?.photo
+  const isVoiceOrAudio = event?.message?.media?.document?.mimeType == "audio/mpeg" || event?.message?.media?.document?.mimeType == "audio/ogg"
+  const isSenderABot = event?.message?.viaBotId == null
+  // console.log(event?.message?.media?.document?.mimeType)
+  // audio/mpeg or audio/ogg
   if (!isVoiceOrAudio && !event.message.photo && !isWebp && !isVideo && (!sender || !sender.id || !chat || !msgID || !msgText || !message)) {
     console.log("Invalid event data");
     return;
   }
 
-  if(isVoiceOrAudio && isSenderABot){
-    queueRequest(handleBtnsMediaHandler,chat, msgID,event.message,isVideo,sender.id,isVoiceOrAudio)
+  if (isVoiceOrAudio && isSenderABot) {
+    queueRequest(handleBtnsMediaHandler, chat, msgID, event.message, isVideo, sender.id, isVoiceOrAudio)
   }
 
 
-  if((isNormalPhoto || isWebp || isVideo)&& event.message.isPrivate && isSenderABot){
-    queueRequest(handleBtnsMediaHandler, chat, msgID,event.message,isVideo,sender.id,isVoiceOrAudio);
+  if ((isNormalPhoto || isWebp || isVideo) && event.message.isPrivate && isSenderABot) {
+    queueRequest(handleBtnsMediaHandler, chat, msgID, event.message, isVideo, sender.id, isVoiceOrAudio);
   }
 
-  
 
-  if (!isVoiceOrAudio && !isNormalPhoto && !isWebp && !isVideo && (event.message.mentioned || (event.message.isPrivate)) && !msgText.startsWith("/")) {
-    queueRequest(gemini, chat, msgID, msgText, message.senderId);
+//will use this for separate messages
+
+  // if (!isVoiceOrAudio && !isNormalPhoto && !isWebp && !isVideo && (event.message.mentioned || (event.message.isPrivate)) && !msgText.startsWith("/")) {
+  //   queueRequest(gemini, chat, msgID, msgText, message.senderId);
+  // }
+
+  const allCommands = [
+    '/feed', '/isign', '/vsign', '/gif', 'gif', '/fun', 'fun', '/ping', 'ping',
+    '/userid', 'userid', '/stop', 'stop', '/ask', 'ask', '/gen', '/song',
+    '/lyrics', 'lyrics', '/about', 'about', '/start', 'start', '/help', 'help',
+    '/set', 'set'
+  ];
+
+  // Function to check if the message text starts with any command
+  function startsWithAnyCommand(msgText, commands) {
+    return commands.some(command => msgText.startsWith(command));
   }
 
 
   if (msgText.startsWith("/feed")) {
-    queueRequest(handleFeed, msgText.replace("/feed",""),message,msgID,chat,sender.id);
+    queueRequest(handleFeed, msgText.replace("/feed", ""), message, msgID, chat, sender.id);
   }
   if (msgText.startsWith("/isign")) {
-    queueRequest(handleImage, msgText.replace("/isign",""),message,msgID,chat,sender.id);
+    queueRequest(handleImage, msgText.replace("/isign", ""), message, msgID, chat, sender.id);
   }
   if (msgText.startsWith("/vsign")) {
-    queueRequest(handleVideo,chat, msgID,message,msgText.replace("/vsign",""),sender.id);
+    queueRequest(handleVideo, chat, msgID, message, msgText.replace("/vsign", ""), sender.id);
   }
   if (msgText.startsWith("/gif") || msgText.startsWith("gif")) {
     queueRequest(replyWithRandomGif, chat, msgID);
@@ -126,8 +137,8 @@ const isSenderABot = event?.message?.viaBotId == null
     queueRequest(replyWithPing, chat, msgID, startSeconds);
   }
 
-  if (msgText.startsWith("/userid") || msgText.startsWith("userid") || event.message.fwdFrom!=null) {
-    queueRequest(replyWithUserId, chat, msgID, message,event.message?.fwdFrom);
+  if (msgText.startsWith("/userid") || msgText.startsWith("userid") || event.message.fwdFrom != null) {
+    queueRequest(replyWithUserId, chat, msgID, message, event.message?.fwdFrom);
   }
 
   if (msgText.startsWith("/stop") || msgText.startsWith("stop")) {
@@ -139,7 +150,6 @@ const isSenderABot = event?.message?.viaBotId == null
   }
 
   if (msgText.startsWith("/gen")) {
-    console.log(msgText);
     queueRequest(genButtons, sender.id, chat, msgID, msgText);
   }
 
@@ -158,10 +168,83 @@ const isSenderABot = event?.message?.viaBotId == null
     queueRequest(replyWithStart, chat, msgID, msgText);
   }
   if (msgText.startsWith("/help") || msgText.startsWith("help")) {
-    queueRequest(replyWithHelp, chat, msgID, msgText,sender.id);
+    queueRequest(replyWithHelp, chat, msgID, msgText, sender.id);
   }
   if (msgText.startsWith("/set") || msgText.startsWith("set")) {
-    queueRequest(replyWithGlobalMenu, chat, msgID, msgText,sender.id);
+    queueRequest(replyWithGlobalMenu, chat, msgID, msgText, sender.id);
+  }
+  if (!startsWithAnyCommand(msgText, allCommands)) {
+    try {
+      //call to n8n
+      const data = await axios.post(process.env.N8N, { message: msgText })
+      const flag = data?.data[0]?.endpoint || data?.data?.endpoint
+      const translatedMsg = data?.data[0]?.message || data?.data?.message
+      const needsDownloading = data?.data[0]?.download || data?.data?.download
+      console.log("flag", data?.data[0]?.endpoint)
+
+      if (flag == "/help") {
+        queueRequest(gemini, chat, msgID, msgText, message.senderId);
+        queueRequest(replyWithHelp, chat, msgID, msgText, sender.id);
+      }
+      else if (flag == "/about") {
+        queueRequest(replyWithAbout, chat, msgID, msgText);
+      }
+      else if (flag == "/start") {
+        queueRequest(replyWithStart, chat, msgID, msgText);
+      }
+      else if (flag == "/set") {
+        queueRequest(replyWithGlobalMenu, chat, msgID, msgText, sender.id);
+      }
+      else if (flag == "/gen") {
+        queueRequest(gemini, chat, msgID, msgText, message.senderId);
+        queueRequest(genButtons, sender.id, chat, msgID, translatedMsg|| msgText);
+      }
+      else if (flag == "/song" && needsDownloading) {
+        queueRequest(gemini, chat, msgID, msgText, message.senderId);
+        queueRequest(songDownloader, chat, msgID, msgText);
+      }
+      else if (flag == "/lyrics") {
+        queueRequest(gemini, chat, msgID, msgText, message.senderId);
+        queueRequest(lyricsFinder, chat, msgID, msgText);
+      }
+      else if (flag == "/stop") {
+        queueRequest(stopServer, chat, msgID, msgText);
+      }
+      else if (flag == "/ask") {
+        queueRequest(gemini, chat, msgID, msgText);
+      }
+      else if (flag == "/userid") {
+        queueRequest(gemini, chat, msgID, msgText, message.senderId);
+        queueRequest(replyWithUserId, chat, msgID, message, event.message?.fwdFrom);
+      }
+      else if (flag == "/ping") {
+        queueRequest(gemini, chat, msgID, msgText, message.senderId);
+        queueRequest(replyWithPing, chat, msgID, startSeconds);
+      }
+      else if (flag == "/gif") {
+        queueRequest(gemini, chat, msgID, msgText, message.senderId);
+        queueRequest(replyWithRandomGif, chat, msgID);
+      }
+      else if (flag == "/fun") {
+        queueRequest(gemini, chat, msgID, msgText, message.senderId);
+        queueRequest(replyWithFun, chat, msgID, message, sender);
+      }
+      else if (flag == "/isign") {
+        queueRequest(handleImage, msgText.replace("/isign", ""), message, msgID, chat, sender.id);
+      }
+      else if (flag == "/vsign") {
+        queueRequest(handleVideo, chat, msgID, message, msgText.replace("/vsign", ""), sender.id);
+      }
+      else if (flag == "/feed") {
+        queueRequest(handleFeed, msgText.replace("/feed", ""), message, msgID, chat, sender.id);
+      }
+      else {
+        queueRequest(gemini, chat, msgID, msgText, message.senderId);
+        // console.log("Invalid flag from N8N:", flag);
+      }
+    } catch (error) {
+      console.error("Error sending message to N8N:", error?.message);
+    }
   }
 
 

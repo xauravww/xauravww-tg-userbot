@@ -67,10 +67,11 @@ export async function generateImage3(userId, chat, msgId, message, modelVersion,
     
     // Ensure the buffer is correctly written as an image file
     fs.writeFileSync(tempImagePath, Buffer.from(response.data));
-    await client.editMessage(chat, {
-      message: initialMessageId,
-      text: `Image generation complete!`,
-    });
+    // await client.editMessage(chat, {
+    //   message: initialMessageId,
+    //   text: `Image generation complete!`,
+    // });
+    await client.deleteMessages(chat, [initialMessageId], {revoke:true});
     await client.sendFile(chat, {
       file: tempImagePath,
       caption: `<code>${apiData.prompt}</code>`,
