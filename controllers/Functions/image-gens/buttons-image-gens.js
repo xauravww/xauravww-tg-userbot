@@ -3,7 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { Button } from "telegram/tl/custom/button.js";
 import { CallbackQuery } from "telegram/events/CallbackQuery.js";
-import { generateImage3 } from "./flux-schnell-gen.js";
+import { generateImage4} from "./fast-gen.js";
 
 import { genImage2 } from "./speed-gen.js";
 import { genImage4 } from "./replicate-gen.js";
@@ -18,14 +18,6 @@ const globalchat = {};
 
 // Function to initiate the image generation process with buttons
 export async function genButtons(userId, chat, msgId, message) {
-  console.log(
-    "🎉 ~ buttons-image-gens.js:23 -> userId, chat, msgId, message: ",
-    userId,
-    chat,
-    msgId,
-    message
-  );
-
   // Store data in the globalchat variable
   globalchat[userId] = {
     chatId: chat.chatId,
@@ -88,32 +80,31 @@ async function ButtonHandler(event) {
     return; // Return early if the clicked user is different
   }
 
-  console.log("Callback data received:", action);
+  // console.log("Callback data received:", action);
 
   // Retrieve the message using the originalUserId from globalchat
   const message = globalchat[originalUserId]?.message;
-  console.log("Message retrieved:", message);
+  // console.log("Message retrieved:", message);
 
   switch (action) {
     case "flux-schnell":
-      console.log("flux-schnell button clicked");
+      // console.log("flux-schnell button clicked");
       client.editMessage(chat, {
         message: parseInt(globalchat[originalUserId]?.initialMsgId),
         text: `Replying you with an image , please wait ...`,
         parseMode: "md2",
       });
-      await generateImage3(
+      await generateImage4(
         originalUserId,
         chat,
         msgId,
         message.replace(/\/gen/, ""),
-        process.env.FLUX_SCHNELL_API_MODEL_SUFFIX,
         parseInt(globalchat[originalUserId]?.initialMsgId)
       );
       break;
 
     case "speed-gen":
-      console.log("speed-gen button clicked");
+      // console.log("speed-gen button clicked");
 
       // client.editMessage(chat, {
       //   message: parseInt(globalchat[originalUserId]?.initialMsgId),
@@ -147,8 +138,8 @@ async function ButtonHandler(event) {
       // );
       break;
     case "speed-1":
-      console.log("speed-1 button clicked");
-      console.log(globalchat[originalUserId]?.initialMsgId)
+      // console.log("speed-1 button clicked");
+      // console.log(globalchat[originalUserId]?.initialMsgId)
       client.editMessage(chat, {
         message: parseInt(globalchat[originalUserId]?.initialMsgId),
         text: `Replying you with an image , please wait ...`,
@@ -164,7 +155,7 @@ async function ButtonHandler(event) {
       );
       break;
     case "speed-2":
-      console.log("speed-2 button clicked");
+      // console.log("speed-2 button clicked");
       client.editMessage(chat, {
         message: parseInt(globalchat[originalUserId]?.initialMsgId),
         text: `Replying you with 2 images , please wait ...`,
@@ -180,7 +171,7 @@ async function ButtonHandler(event) {
       );
       break;
     case "speed-3":
-      console.log("speed-3 button clicked");
+      // console.log("speed-3 button clicked");
       client.editMessage(chat, {
         message: parseInt(globalchat[originalUserId]?.initialMsgId),
         text: `Replying you with 3 images , please wait ...`,
@@ -196,7 +187,7 @@ async function ButtonHandler(event) {
       );
       break;
     case "speed-4":
-      console.log("speed-4 button clicked");
+      // console.log("speed-4 button clicked");
       client.editMessage(chat, {
         message: parseInt(globalchat[originalUserId]?.initialMsgId),
         text: `Replying you with 4 images , please wait ...`,
@@ -212,7 +203,7 @@ async function ButtonHandler(event) {
       );
       break;
     case "replicate-gen":
-      console.log("replicate-gen button clicked");
+      // console.log("replicate-gen button clicked");
       client.editMessage(chat, {
         message: parseInt(globalchat[originalUserId]?.initialMsgId),
         text: `Replying you with an image , please wait ...`,
@@ -228,7 +219,7 @@ async function ButtonHandler(event) {
       break;
 
     // default:
-    //   console.log("Unknown callback data:", callbackData);
+    //   // console.log("Unknown callback data:", callbackData);
     //   await client.sendMessage(chat, {
     //     message: "Unknown button clicked. Please try again.",
     //     replyTo: msgId,
