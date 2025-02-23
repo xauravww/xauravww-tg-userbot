@@ -10,7 +10,7 @@ function handleMessage(event) {
         const senderId = event.sender.id;
         const messageText = event.message.text;
 
-        console.log(`Received message from sender ${senderId}: ${messageText}`);
+        // console.log(`Received message from sender ${senderId}: ${messageText}`);
 
         // Add your logic here to process the incoming message
     } catch (error) {
@@ -39,7 +39,7 @@ export function getFromWebhook(req, res) {
 export async function postToWebHook(req, res) {
     try {
         let body = req.body;
-        console.log(JSON.stringify(body));
+        // console.log(JSON.stringify(body));
 
         if (body) {
             const msgText = body?.entry[0]?.messaging[0]?.message?.text;

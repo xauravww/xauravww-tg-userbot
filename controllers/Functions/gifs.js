@@ -33,7 +33,7 @@ export async function replyWithRandomGif(chat, msgID) {
         replyTo: msgID
       })
       .then(() => {
-        console.log("Successfully replied with GIF");
+        // console.log("Successfully replied with GIF");
       });
   } catch (error) {
     console.error("Error occurred while replying with random GIF:", error);

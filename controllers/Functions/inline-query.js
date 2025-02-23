@@ -9,7 +9,7 @@ dotenv.config({path: path.resolve(".env")})
 export async function inlineQueryHandler(){
   client.addEventHandler(async (event) => {
     if (!event.query) return;
-    // console.log("Received inline query:", event.query);
+    // // console.log("Received inline query:", event.query);
     const messageIds = await getArr(); 
 
     if (event.query) {
@@ -22,12 +22,12 @@ export async function inlineQueryHandler(){
 
       if (result?.messages && result.messages.length > 0) {
         const dummyResults = result.messages.map((message) => {
-          // console.log('message?.message', message?.message);
+          // // console.log('message?.message', message?.message);
           const regex = new RegExp(event.query, 'i');
           if (regex.test(message?.message)) {
             if (message.media && message.media.document) {
               const media = message.media.document;
-              // console.log(media?.attributes[0]?.title)
+              // // console.log(media?.attributes[0]?.title)
               return new Api.InputBotInlineResultDocument({
                 id: String(message.id),
                 type: "voice",
@@ -52,7 +52,7 @@ export async function inlineQueryHandler(){
           return null;
         }).filter(result => result !== null);
 
-        // console.log("Filtered Results:", dummyResults);
+        // // console.log("Filtered Results:", dummyResults);
 
         if (dummyResults.length > 0) {
           await client.invoke(

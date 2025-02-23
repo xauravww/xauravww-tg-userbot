@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 
 export async function genImage2(userId, chat, msgId, message, count, initialMessageId) {
   console.table(JSON.stringify(userId, chat, msgId, message));
-  console.log("initial msg id", initialMessageId);
+  // console.log("initial msg id", initialMessageId);
 
   try {
     // await client.sendMessage(chat, {
@@ -17,7 +17,7 @@ export async function genImage2(userId, chat, msgId, message, count, initialMess
     //   replyTo: msgId,
     // });
 
-    console.log("Initial message sent: Image generation is underway.");
+    // console.log("Initial message sent: Image generation is underway.");
 
     // Directly send data in JSON format without FormData
     const prompt = message.replace(/\/gen2/, "").trim();
@@ -28,7 +28,7 @@ export async function genImage2(userId, chat, msgId, message, count, initialMess
     );
 
     const uuid = initialResponse.data.uuid;
-    console.log("UUID received:", uuid);
+    // console.log("UUID received:", uuid);
 
     // Poll for image generation status
     let status = "";
@@ -41,7 +41,7 @@ export async function genImage2(userId, chat, msgId, message, count, initialMess
       const statusResponse = await axios.get(`${process.env.FREE_IMG_GEN_API}/guest-watch-process/${uuid}`);
       status = statusResponse.data.status;
       images = statusResponse.data.images || [];
-      console.log(`Attempt ${attempts + 1}: Status - ${status}, Images - ${images.length}`);
+      // console.log(`Attempt ${attempts + 1}: Status - ${status}, Images - ${images.length}`);
       attempts++;
     }
 
@@ -76,9 +76,9 @@ export async function genImage2(userId, chat, msgId, message, count, initialMess
       //   text: `Image generation complete!`,
       // });
       await client.deleteMessages(chat, [initialMessageId], {revoke:true});
-      console.log("All images sent to the chat and temporary files deleted.");
+      // console.log("All images sent to the chat and temporary files deleted.");
     } else {
-      console.log("Image generation failed or did not complete in time.");
+      // console.log("Image generation failed or did not complete in time.");
       await client.sendMessage(chat, {
         message: "Image generation failed. Please try again.",
         replyTo: msgId,

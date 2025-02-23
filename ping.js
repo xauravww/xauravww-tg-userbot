@@ -17,7 +17,7 @@ function getPingTime() {
       const matches = output.match(/Average = (\d+)ms/)
       if (matches && matches.length > 1) {
         avgPingTime = parseInt(matches[1])
-        console.log(`Average ping time: ${avgPingTime}ms`)
+        // console.log(`Average ping time: ${avgPingTime}ms`)
         resolve(avgPingTime)
       }
     })
@@ -28,7 +28,7 @@ function getPingTime() {
     })
 
     pingProcess.on("close", (code) => {
-      console.log(`child process exited with code ${code}`)
+      // console.log(`child process exited with code ${code}`)
     })
   })
 }

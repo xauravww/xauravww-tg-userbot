@@ -29,7 +29,7 @@ async function main(songUrl, songName) {
     }
 
     const streamUrl = apiResponse.data.url;
-    console.log("Stream URL received:", streamUrl);
+    // console.log("Stream URL received:", streamUrl);
 
     // Define the path for the MP3 file using path.join()
     const mp3FilePath = path.join(process.cwd(), `${songName}.mp3`);
@@ -48,7 +48,7 @@ async function main(songUrl, songName) {
 
     return new Promise((resolve, reject) => {
       writer.on("finish", () => {
-        console.log(`MP3 file saved to ${mp3FilePath}`);
+        // console.log(`MP3 file saved to ${mp3FilePath}`);
         resolve(mp3FilePath); // Return the path of the saved MP3 file
       });
       writer.on("error", (error) => {
@@ -78,7 +78,7 @@ export async function songDownloader(chat, msgID, msgText) {
   // Check if the song already exists in localStorage
   const storedFileName = getvalueData(songUrl);
   if (storedFileName && fs.existsSync(storedFileName)) {
-    console.log(`Sending the previously downloaded file for ${songName}...`);
+    // console.log(`Sending the previously downloaded file for ${songName}...`);
     await client.sendFile(chat, {
       file: storedFileName,
       caption: `Here is your requested song: ${songName} (previously downloaded)`,
@@ -86,7 +86,7 @@ export async function songDownloader(chat, msgID, msgText) {
     });
 
     deletevalueData(songUrl);
-    console.log(`Deleted ${songName} from localStorage after sending.`);
+    // // console.log(`Deleted ${songName} from localStorage after sending.`);
     return;
   }
 
@@ -96,7 +96,7 @@ export async function songDownloader(chat, msgID, msgText) {
   });
 
   const downloadedFileName = await main(songUrl, songName);
-  console.log("Downloaded file at " + downloadedFileName);
+  // console.log("Downloaded file at " + downloadedFileName);
 
   if (downloadedFileName && fs.existsSync(downloadedFileName)) {
     setvalueData(songUrl, downloadedFileName);
@@ -115,7 +115,7 @@ export async function songDownloader(chat, msgID, msgText) {
 
     try {
       await fs.promises.unlink(downloadedFileName);
-      console.log(`Successfully deleted file: ${downloadedFileName}`);
+      // // console.log(`Successfully deleted file: ${downloadedFileName}`);
     } catch (err) {
       console.error("Failed to delete file:", err);
     }

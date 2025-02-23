@@ -9,7 +9,7 @@ const globalchat = {};
 export async function replyWithUserId(chat, msgId, message, fwdFrom) {
   const fwdId = fwdFrom?.fromId?.userId
   try {
-    // console.log(chat)
+    // // console.log(chat)
     if (!fwdFrom) {
       const msgText = `Your userid is <code>${message.senderId}</code>`;
       await client.sendMessage(chat, {
@@ -156,15 +156,15 @@ export async function ButtonHandler(event) {
     return; // Return early if the clicked user is different
   }
 
-  console.log("Callback data received:", action);
+  // console.log("Callback data received:", action);
 
   // Retrieve the message using the originalUserId from globalchat
   const message = globalchat[originalUserId]?.message;
-  console.log("Message retrieved:", message);
-  console.log("Action is: " + action);
+  // console.log("Message retrieved:", message);
+  // console.log("Action is: " + action);
   switch (action) {
     case "ai-chatbot":
-      console.log("ai-chatbot button clicked");
+      // console.log("ai-chatbot button clicked");
       await client.editMessage(chat,{
         message:initialMsgId,
         text: `There are 2 ways to ask in any language: \n1. /ask What is the capital of India  \n2. Replying to bot messages will also work. \n\n\n If u got any error like too many requests then please try again.`,
@@ -175,7 +175,7 @@ export async function ButtonHandler(event) {
       })
       break;
     case "random-gifs":
-      console.log("random gifs button clicked");
+      // console.log("random gifs button clicked");
       await client.editMessage(chat,{
         message:initialMsgId,
         text:  "Use command /gif \nThis command doesn't need any extra query to be passed , this will generate a random gif",
@@ -186,7 +186,7 @@ export async function ButtonHandler(event) {
       })
       break;
     case "image-gen":
-      console.log("image-gen button clicked");
+      // console.log("image-gen button clicked");
       await client.editMessage(chat,{
         message:initialMsgId,
         text:  "Use /gen command with query params: \ne.g. /gen a cat \nDisclaimer: There is no image censorship filters in Schnell and Replicate model , so it might generate some inappropriate things.",
@@ -197,7 +197,7 @@ export async function ButtonHandler(event) {
       })
       break;
     case "ping":
-      console.log("image-gen button clicked");
+      // console.log("image-gen button clicked");
       await client.editMessage(chat,{
         message:initialMsgId,
         text:   "Use /ping command to check server uptime and response time.",
@@ -208,7 +208,7 @@ export async function ButtonHandler(event) {
       })
       break;
     case "userid":
-      console.log("image-gen button clicked");
+      // console.log("image-gen button clicked");
       await client.editMessage(chat,{
         message:initialMsgId,
         text:  "1. Use /userid command to get your userid. \n2. Forward any user message directly to bot",
@@ -219,7 +219,7 @@ export async function ButtonHandler(event) {
       })
       break;
     case "song":
-      console.log("image-gen button clicked");
+      // console.log("image-gen button clicked");
       await client.editMessage(chat,{
         message:initialMsgId,
         text:  "Use /song command with query params \n\ne.g. /song angrezi beat yo yo honey \n\nThis will send you mp3 file of that song directly from youtube. \n\nNote: Sometimes it can take 10-15 seconds.",
@@ -230,7 +230,7 @@ export async function ButtonHandler(event) {
       })
       break;
     case "lyrics":
-      console.log("image-gen button clicked");
+      // console.log("image-gen button clicked");
       await client.editMessage(chat,{
         message:initialMsgId,
         text:   "Use /lyrics command with query params \n\ne.g. /lyrics song_name by artist_name \n\nNote: Regional songs are not supported\n\n😵😵This feature is in maintenance mode",
@@ -241,7 +241,7 @@ export async function ButtonHandler(event) {
       })
       break;
     case "i-sign":
-      console.log("img-sign button clicked");
+      // console.log("img-sign button clicked");
       await client.editMessage(chat,{
         message:initialMsgId,
         text:    "Returns sticker file which we can use in @Stickers bot for static stickers\n/isign overlayMsg,color,fontSize\nAll fields are optional\nYou can simply leave blank if you dont want to give specific custom arguments\ne.g. <pre>/isign ,,,100</pre>\n<pre>/isign hello,red,50,100</pre>\n<pre>/isign</pre>\nYou can use any variation you want\nYou can use this in direct message or in any group(having admin rights otherwise it can't access group history and will show unexpected results)\nTry and test any type of color (explained in detail in video sign help) except RGB format",
@@ -252,7 +252,7 @@ export async function ButtonHandler(event) {
       })
       break;
     case "v-sign":
-      console.log("video-sign button clicked");
+      // console.log("video-sign button clicked");
       await client.editMessage(chat,{
         message:initialMsgId,
         text:    "Returns webm file which we can use in @Stickers bot for video stickers\n<pre><code>/vsign overlayMsg ,color ,fontSize ,position</code></pre>\nAll fields are optional\nYou can simply leave blank if you dont want to give that custom argument\ne.g. <pre><code>/vsign namastey,,20,100</code></pre>\n<pre><code>/vsign hello,red,20,100</code></pre>\n<pre><code>/vsign</code></pre>\nYou can try out your own variations\nNote: I set a limit of 5MB/upload\nAlso decompresses video and clip it upto 3 seconds for telegram optimized video stickers\nYou can use this in direct message or in any group(having admin rights otherwise it can't access group history and will show unexpected results)\n\nSome popular colors input:\n<pre>black, white, red, green, blue, yellow, cyan, magenta, aqua, fuchsia, gray, lime, maroon, navy, olive, purple, silver, teal or any type of #hex color like #ffffff etc.\nBut RGB color won't work</pre>\n\nPosition can take 2 type of values:\n<pre>1. bottom 50</pre>\n<pre>2. top 50</pre>\nYou can give any value after top or bottom which decides it Y axis position of text overlay.\nPS:Keep it small",
@@ -263,7 +263,7 @@ export async function ButtonHandler(event) {
       })
       break;
     case "other":
-      console.log("image-gen button clicked");
+      // console.log("image-gen button clicked");
       await client.editMessage(chat,{
         message:initialMsgId,
         text:   "This bot also sends all my instagram reels from my dm to my telegram channel. (Not for public use as of now) \nOther cmds are: \n1. /about  \n2. /stop secret_password",
@@ -283,7 +283,7 @@ export async function ButtonHandler(event) {
       break;
 
     // default:
-    //   console.log("Unknown callback data:", callbackData);
+    //   // console.log("Unknown callback data:", callbackData);
     //   // await client.sendMessage(chat, {
     //   //   message: "Unknown button clicked. Please try again.",
     //   //   replyTo: msgId,

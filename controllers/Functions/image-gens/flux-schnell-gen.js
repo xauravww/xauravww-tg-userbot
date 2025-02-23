@@ -33,7 +33,7 @@ export async function generateImage3(userId, chat, msgId, message, modelVersion,
 
     const apiData = {
       "height": 1024,
-      "prompt": message.replace(/\/ben3/, ""),
+      "prompt": message.replace("/\/gen", ""),
       "version": `${process.env.FLUX_SCHNELL_API_MODEL_PREFIX}/${modelVersion}`,
       "width": 1024
     }
@@ -51,12 +51,12 @@ export async function generateImage3(userId, chat, msgId, message, modelVersion,
     });
 
     // Log the response to check if it contains valid data
-    // console.log("API response length:", response.data.byteLength);
+    // // console.log("API response length:", response.data.byteLength);
     if (response.data.byteLength === 0) {
       throw new Error("Received empty image data.");
     }
 
-    console.log("🏝️ ~ flux-gen.js:75 -> response.data: ", response.data);
+    // console.log("🏝️ ~ flux-gen.js:75 -> response.data: ", response.data);
 
     const tempDir = path.join(__dirname, 'temp_img');
     if (!fs.existsSync(tempDir)) {
@@ -80,7 +80,7 @@ export async function generateImage3(userId, chat, msgId, message, modelVersion,
     });
 
     fs.unlinkSync(tempImagePath); // Clean up
-    console.log("Image sent and temp file deleted.");
+    // console.log("Image sent and temp file deleted.");
 
   } catch (error) {
     console.error("Error generating image:", error.message);

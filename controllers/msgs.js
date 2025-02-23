@@ -56,11 +56,11 @@ async function processQueue() {
 
 // Modify the eventPrint function to be used with the queue
 async function eventPrint(event) {
-  // console.log(event);
-  // console.log("event.className",event?.originalUpdate?.className)
+  // // console.log(event);
+  // // console.log("event.className",event?.originalUpdate?.className)
 
   if (!event.message) {
-    console.log("no msg defined for event");
+    // console.log("no msg defined for event");
     return;
   }
 
@@ -70,20 +70,20 @@ async function eventPrint(event) {
   const msgID = event.message.id;
   const msgText = message.text.toLowerCase();
   const peerId = event.message.peerId.chatId || event.message.peerId.channelId;
-  // console.log(event)
+  // // console.log(event)
 
   const chat = await client.getInputEntity(event.message.peerId);
   const sender = await message.getSender();
-  // console.log("typeof event.message" ,typeof event.message)
+  // // console.log("typeof event.message" ,typeof event.message)
   const isVideo = event?.message?.media?.document?.mimeType == "video/mp4" || event?.message?.media?.document?.mimeType == "video/webm"
   const isWebp = event?.message?.media?.document?.mimeType == "image/webp"
   const isNormalPhoto = event?.message?.photo
   const isVoiceOrAudio = event?.message?.media?.document?.mimeType == "audio/mpeg" || event?.message?.media?.document?.mimeType == "audio/ogg"
   const isSenderABot = event?.message?.viaBotId == null
-  // console.log(event?.message?.media?.document?.mimeType)
+  // // console.log(event?.message?.media?.document?.mimeType)
   // audio/mpeg or audio/ogg
   if (!isVoiceOrAudio && !event.message.photo && !isWebp && !isVideo && (!sender || !sender.id || !chat || !msgID || !msgText || !message)) {
-    console.log("Invalid event data");
+    // console.log("Invalid event data");
     return;
   }
 
@@ -180,7 +180,7 @@ async function eventPrint(event) {
       const flag = data?.data[0]?.endpoint || data?.data?.endpoint
       const translatedMsg = data?.data[0]?.message || data?.data?.message
       const needsDownloading = data?.data[0]?.download || data?.data?.download
-      console.log("flag", data?.data[0]?.endpoint)
+      // console.log("flag", data?.data[0]?.endpoint)
 
       if (flag == "/help") {
         queueRequest(gemini, chat, msgID, msgText, message.senderId);
@@ -240,7 +240,7 @@ async function eventPrint(event) {
       }
       else {
         queueRequest(gemini, chat, msgID, msgText, message.senderId);
-        // console.log("Invalid flag from N8N:", flag);
+        // // console.log("Invalid flag from N8N:", flag);
       }
     } catch (error) {
       console.error("Error sending message to N8N:", error?.message);

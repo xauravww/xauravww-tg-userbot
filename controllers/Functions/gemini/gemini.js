@@ -16,7 +16,7 @@ const {
 const apiKey = process.env.GEMINI_API_KEY;
 
 const MODEL_NAME = getGlobalValue("textModel") || process.env.GEMINI_MODEL_NAME.split(" ")[0];
-console.log("MODEL NAME", MODEL_NAME);
+// console.log("MODEL NAME", MODEL_NAME);
 const genAI = new GoogleGenerativeAI(apiKey);
 
 // Configure model with persona-specific system instruction
@@ -82,7 +82,7 @@ async function runChat(inputText, senderId) {
     const modelMessage = { role: "model", parts: [{ text: responseText }] };
     chatHistories[senderId].push(modelMessage);
     const html = converter.makeHtml(responseText);
-    console.log(html)
+    // console.log(html)
     return html;
   } catch (error) {
     console.error("Error during chat:", error);

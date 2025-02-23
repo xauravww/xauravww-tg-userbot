@@ -6,7 +6,7 @@ const axios = require("axios");
 const fs = require("fs").promises;
 
 export async function overlayTextOnImage(imageUrl, text, outputFilePath, color, fontSizeGiven,positionY) {
-  console.log("positionY: " + positionY)
+  // console.log("positionY: " + positionY)
   return new Promise(async (resolve, reject) => {
     try {
       // Fetch the image using axios
@@ -14,7 +14,7 @@ export async function overlayTextOnImage(imageUrl, text, outputFilePath, color, 
       const imageBuffer = Buffer.from(response.data, "binary");
 
       // Load the image onto the canvas
-      console.log("Downloading image from:", imageUrl);
+      // console.log("Downloading image from:", imageUrl);
       const img = await loadImage(imageBuffer);
       const canvas = createCanvas(img.width, img.height);
       const ctx = canvas.getContext("2d");
@@ -61,7 +61,7 @@ export async function overlayTextOnImage(imageUrl, text, outputFilePath, color, 
       // Save the PNG buffer to a file
       await fs.writeFile(outputFilePath, buffer);
 
-      console.log(`Image canvas saved to ${outputFilePath}`);
+      // console.log(`Image canvas saved to ${outputFilePath}`);
       resolve(outputFilePath);
     } catch (error) {
       console.error("Error overlaying text on image:", error);

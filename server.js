@@ -38,7 +38,7 @@ inlineQueryHandler()
   }, new NewMessage({}));
 
 
-  console.log("Listening for new messages...");
+  // console.log("Listening for new messages...");
 })();
 
 app.get("/", (req, res) => {

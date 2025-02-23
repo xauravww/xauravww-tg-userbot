@@ -67,11 +67,11 @@ export async function handleBtnsMediaHandler(
 
 
 export async function handleFeed(msgText, messageObj, msgId, chat,originalUserId){
-console.log("handled feed successfully")
-console.log(msgText);
+// console.log("handled feed successfully")
+// console.log(msgText);
 const messageHavingAFile = await client.getMessages(chat, {ids:messageObj.replyTo.replyToMsgId})
-// console.log(messageObj.replyTo.replyToMsgId)
-console.log(messageHavingAFile)
+// // console.log(messageObj.replyTo.replyToMsgId)
+// console.log(messageHavingAFile)
 const media = messageHavingAFile[0]?.media?.document
 
 const msgFwd = await client.invoke(new Api.messages.SendMedia(
@@ -87,9 +87,9 @@ const msgFwd = await client.invoke(new Api.messages.SendMedia(
     
   }
 ))
-console.log("msgFwd", msgFwd)
+// console.log("msgFwd", msgFwd)
 await redisClient.lPush('inlineAudioArr',String(msgFwd?.updates[0]?.id)).then(()=>{
-  console.log("InlineAudioArr redis updated successfully")
+  // console.log("InlineAudioArr redis updated successfully")
 })
 await client.sendMessage(chat,{message:"Succesfully saved to our database",replyTo:msgId})
 }
@@ -116,17 +116,17 @@ export async function handleImage(msgText, messageObj, msgId, chat,originalUserI
     // or
     const msgIdNew = await getReplyMessageId(messageObj)
 
-    console.log("messageObj?.replyTo?.replyToMsgId || msgIdNew ",messageObj?.replyTo?.replyToMsgId , msgIdNew)
-    console.log("chat: " + JSON.stringify(chat));
-    console.log("process.env.DEV_USERNAME",process.env.DEV_USERNAME)
+    // console.log("messageObj?.replyTo?.replyToMsgId || msgIdNew ",messageObj?.replyTo?.replyToMsgId , msgIdNew)
+    // console.log("chat: " + JSON.stringify(chat));
+    // console.log("process.env.DEV_USERNAME",process.env.DEV_USERNAME)
     // Get messages by ID:
 const msgFwd = await client.getMessages(chat, {ids:msgIdNew})
-// console.log(" get messages : " + JSON.stringify(msgFwd))
+// // console.log(" get messages : " + JSON.stringify(msgFwd))
     // const msgFwd = await client.forwardMessages(process.env.DEV_USERNAME, {
     //   messages: messageObj?.replyTo?.replyToMsgId || msgIdNew,
     //   fromPeer: chat,
     // });
-    console.log("msgFwd: " + JSON.stringify(msgFwd[0][0]));
+    // console.log("msgFwd: " + JSON.stringify(msgFwd[0][0]));
     await fs.mkdir(dirPath, { recursive: true }); // Create the directory if it doesn't exist
 
     // Download the image buffery
@@ -185,11 +185,11 @@ export async function handleVideo(chat, msgId, messageObj,msgWithOptions,origina
   const position = msgWithOptions.split(",")[3]?.trim() || "30"
   const posnStart = position.split(" ")[0]?.trim() || "30"
   const posnVal = position.split(" ")[1]?.trim() || posnStart
-  console.log("position is ", position)
-  console.log("posnStart is ", posnStart)
-  console.log("posnVal is ", posnVal)
+  // console.log("position is ", position)
+  // console.log("posnStart is ", posnStart)
+  // console.log("posnVal is ", posnVal)
   const positionValue= posnStart=="bottom"? `h-text_h-${posnVal}` : `${posnVal}`
-  console.log("positionvalue is ", positionValue)
+  // console.log("positionvalue is ", positionValue)
   try {
     // const messageToDelete = await client.sendMessage(chat, {
     //   message: "Sending webm file for the video..",
@@ -210,13 +210,13 @@ export async function handleVideo(chat, msgId, messageObj,msgWithOptions,origina
     const msgIdNew = await getReplyMessageId(messageObj)
 
     const msgFwd = await client.getMessages(chat, {ids:msgIdNew})
-// console.log(" get messages : " + JSON.stringify(msgFwd))
+// // console.log(" get messages : " + JSON.stringify(msgFwd))
 
 
     // Ensure the directory exists
     const dirPath = "img_for_handler";
     await fs.mkdir(dirPath, { recursive: true });
-    console.log("video file :",msgFwd[0]?.media?.document?.size)
+    // console.log("video file :",msgFwd[0]?.media?.document?.size)
     if(msgFwd[0]?.media?.document?.size && msgFwd[0]?.media?.document?.size> 5242880){
       //return as video exceeeds 5 mb and i dont want to overload my server
 

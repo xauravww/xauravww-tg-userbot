@@ -2,22 +2,22 @@ import { setvalueData, getvalueData, deletevalueData } from "./localStorageUtils
 import dotenv from "dotenv"
 dotenv.config({path:'.env'})
 
-console.log(process.env.MODEL_NAME_GEMINI)
+// // console.log(process.env.MODEL_NAME_GEMINI)
 const ownerId = process.env.OWNER_USERID ? process.env.OWNER_USERID.split(" ") : [];
 
 function setGlobalValue( globalchat, userid, item, value) {
   if (ownerId != userid) {
-    console.log("no owner found for message")
+    // // console.log("no owner found for message")
     return;
   }
 
   const global_object = JSON.parse(getvalueData("global_object")) || {};
   
   // Dynamically set the new key-value pair
-  console.log(global_object)
+  // // console.log(global_object)
   global_object[item] = value;
 
-  console.log(global_object)
+  // // console.log(global_object)
 
   setvalueData("global_object", JSON.stringify(global_object));
 }

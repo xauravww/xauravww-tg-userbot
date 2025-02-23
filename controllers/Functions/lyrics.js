@@ -16,7 +16,7 @@ export async function lyricsFinder(chat, msgId, messageText) {
       const song = matches[1];
       const singer = matches[2];
 
-      console.log(`https://api.lyrics.ovh/v1/${singer}/${song}`);
+      // console.log(`https://api.lyrics.ovh/v1/${singer}/${song}`);
 
       request(
         `https://api.lyrics.ovh/v1/${singer}/${song}`,
@@ -40,7 +40,7 @@ export async function lyricsFinder(chat, msgId, messageText) {
         }
       );
     } else {
-      console.log("Pattern not matched");
+      // console.log("Pattern not matched");
     }
   } catch (err) {
     console.error("Error occurred while finding lyrics:", err);

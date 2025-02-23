@@ -96,17 +96,17 @@ const ownerId = process.env.OWNER_USERID ? process.env.OWNER_USERID.split(" ") :
 
 
 
-  console.log("Callback data received:", action);
+  // console.log("Callback data received:", action);
 
   // Retrieve the message using the originalUserId from globalchat
   const message = globalchat[originalUserId]?.message;
-  console.log("Message retrieved:", message);
-  console.log("Action is: " + action);
+  // console.log("Message retrieved:", message);
+  // console.log("Action is: " + action);
   switch (action) {
     case "change-text-model":
-      console.log("change text model button clicked");
-      console.log("ownerid: " + +ownerId +  typeof +ownerId)
-      console.log("clickedUserId: " + +clickedUserId +  typeof +clickedUserId)
+      // console.log("change text model button clicked");
+      // console.log("ownerid: " + +ownerId +  typeof +ownerId)
+      // console.log("clickedUserId: " + +clickedUserId +  typeof +clickedUserId)
       if (+ownerId != +clickedUserId) {
         // Send a message back to the chat if the user is not the one who initiated
         await client.invoke(
@@ -157,7 +157,7 @@ const ownerId = process.env.OWNER_USERID ? process.env.OWNER_USERID.split(" ") :
         break;
 
     // default:
-    //   console.log("Unknown callback data:", callbackData);
+    //   // console.log("Unknown callback data:", callbackData);
     //   // await client.sendMessage(chat, {
     //   //   message: "Unknown button clicked. Please try again.",
     //   //   replyTo: msgId,

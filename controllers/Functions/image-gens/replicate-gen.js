@@ -20,7 +20,7 @@ export async function genImage4(userId, chat, msgId, message,initialMessageId) {
     //   replyTo: msgId,
     // });
 
-    console.log("Initial message sent: Image generation is underway.");
+    // console.log("Initial message sent: Image generation is underway.");
 
     // Define the POST request body based on the provided prompt and settings
     const prompt = message.replace(/\/gen3/, ""); // Remove the command from the message
@@ -40,7 +40,7 @@ export async function genImage4(userId, chat, msgId, message,initialMessageId) {
 
     // Extract the image URL from the response
     const imageUrl = response.data.data[0];
-    console.log("Image URL received:", imageUrl);
+    // console.log("Image URL received:", imageUrl);
 
     // Fetch the image from the URL and store it in a buffer
     const imageResponse = await axios.get(imageUrl, { responseType: "arraybuffer" });
@@ -73,7 +73,7 @@ export async function genImage4(userId, chat, msgId, message,initialMessageId) {
 
     // Delete the temporary image file after sending
     fs.unlinkSync(tempImagePath);
-    console.log("Image sent to the chat and temporary file deleted.");
+    // console.log("Image sent to the chat and temporary file deleted.");
   } catch (error) {
     console.error("Error occurred while generating image:", error);
     console.log("Error details:", {
