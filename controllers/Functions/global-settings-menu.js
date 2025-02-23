@@ -125,6 +125,7 @@ const ownerId = process.env.OWNER_USERID ? process.env.OWNER_USERID.split(" ") :
         [
           Button.inline("Pro", Buffer.from(`change-pro|${originalUserId}`)),
           Button.inline("Flash", Buffer.from(`change-flash|${originalUserId}`)),
+          Button.inline("Voice Toggle", Buffer.from(`change-voice|${originalUserId}`)),
         ]
       ];
       
@@ -150,6 +151,15 @@ const ownerId = process.env.OWNER_USERID ? process.env.OWNER_USERID.split(" ") :
         setGlobalValue(globalchat, originalUserId,"textModel",process.env.MODEL_NAME_GEMINI.split(" ")[1])
         await client.editMessage(chat,{
           text: `Successfully changed model to ${process.env.MODEL_NAME_GEMINI.split(" ")[1]}
+          `,
+          message: globalchat[originalUserId].initialMsgId,
+          parseMode: "md2",
+        })
+        break;
+      case "change-voice":
+        setGlobalValue(globalchat, originalUserId,"voice_toggle",!getGlobalValue("voice_toggle"))
+        await client.editMessage(chat,{
+          text: `Successfully changed voice toggle to ${getGlobalValue("voice_toggle")}
           `,
           message: globalchat[originalUserId].initialMsgId,
           parseMode: "md2",

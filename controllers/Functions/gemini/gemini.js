@@ -83,7 +83,7 @@ async function runChat(inputText, senderId) {
     chatHistories[senderId].push(modelMessage);
     const html = converter.makeHtml(responseText);
     // console.log(html)
-    return html;
+    return {html, responseText}
   } catch (error) {
     console.error("Error during chat:", error);
     return `Too many requests. Please try again later. <br>Or contact <a href="tg://openmessage?user_id=${process.env.OWNER_USERID.split(" ")[0]}">here</a> if it persists longer.`;

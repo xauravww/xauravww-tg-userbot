@@ -25,6 +25,7 @@ function setGlobalValue( globalchat, userid, item, value) {
 function setGlobalObject() {
   const global = {
     textModel: process.env.MODEL_NAME_GEMINI.split(" ")[0]  || "model-unknown",
+    voice_toggle: false
   };
   setvalueData("global_object", JSON.stringify(global));
 }

@@ -3,6 +3,10 @@ import { Button } from "telegram/tl/custom/button.js";
 import { CallbackQuery } from "telegram/events/CallbackQuery.js";
 import { Api } from "telegram";
 
+import fs from 'fs';
+import path from 'path';
+import axios from 'axios';
+
 // Global variable to hold all btn-related data
 const globalchat = {};
 
@@ -52,6 +56,53 @@ export async function replyWithStart(chat, msgId, message, sender) {
   try {
     const msgText = "Hey there welcome! \nUse /help for commands";
     await client.sendMessage(chat, { message: msgText, replyTo: msgId });
+  } catch (error) {
+    console.error("Error occurred while replying with message:", error);
+  }
+}
+
+
+
+export async function replyWithAudio(chat, msgToBeEditedId, msgId, message, audioUrl) {
+  try {
+    // Remove the unnecessary segment from the URL
+    const correctedUrl = audioUrl.replace("/call/g/gradio_api", "");
+    console.log("correctedUrl", correctedUrl);
+
+    // Create the temp_audio folder if it doesn't exist
+    const tempFolder = path.join(process.cwd(), 'temp_audio');
+    if (!fs.existsSync(tempFolder)) {
+      fs.mkdirSync(tempFolder, { recursive: true });
+    }
+
+    // Define the audio file path
+    const fileName = `audio_${Date.now()}.mp3`;
+    const filePath = path.join(tempFolder, fileName);
+
+    // Download the audio file
+    const response = await axios({
+      url: correctedUrl,
+      method: 'GET',
+      responseType: 'stream',
+    });
+
+    const writer = fs.createWriteStream(filePath);
+    response.data.pipe(writer);
+
+    await new Promise((resolve, reject) => {
+      writer.on('finish', resolve);
+      writer.on('error', reject);
+    });
+
+    // Send the downloaded file
+    // await client.sendFile(chat, { file: filePath, replyTo: msgId, caption: message });
+    await client.deleteMessages(chat, [msgToBeEditedId], {revoke:true});
+    await client.sendFile(chat, {file: filePath, replyTo: msgId, caption: message || "" });
+    // Delete the file after sending
+    fs.unlink(filePath, (err) => {
+      if (err) console.error("Error deleting file:", err);
+      else console.log("File deleted successfully:", filePath);
+    });
   } catch (error) {
     console.error("Error occurred while replying with message:", error);
   }

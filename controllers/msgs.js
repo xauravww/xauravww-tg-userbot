@@ -8,7 +8,7 @@ import { client, connectClient, startSeconds } from "../client-init.js";
 import { replyWithPing } from "./Functions/ping.js";
 import { stopServer } from "./Functions/crash.js";
 import { replyWithRandomGif } from "./Functions/gifs.js";
-import { replyWithFun, replyWithUserId, replyWithAbout, replyWithStart, replyWithHelp } from "./Functions/miscellaneous.js";
+import { replyWithFun, replyWithUserId, replyWithAbout, replyWithStart, replyWithHelp, replyWithAudio } from "./Functions/miscellaneous.js";
 import { gemini } from "./Functions/gemini/query_gemini-api.js";
 import { lyricsFinder } from "./Functions/lyrics.js";
 import { genButtons } from "./Functions/image-gens/buttons-image-gens.js";
@@ -22,7 +22,7 @@ const queue = [];
 let isProcessingQueue = false;
 
 // Function to add a request to the queue
-function queueRequest(func, ...args) {
+export function queueRequest(func, ...args) {
   queue.push({ func, args });
   processQueue();
 }
@@ -97,7 +97,7 @@ async function eventPrint(event) {
   }
 
 
-//will use this for separate messages
+  //will use this for separate messages
 
   // if (!isVoiceOrAudio && !isNormalPhoto && !isWebp && !isVideo && (event.message.mentioned || (event.message.isPrivate)) && !msgText.startsWith("/")) {
   //   queueRequest(gemini, chat, msgID, msgText, message.senderId);
@@ -114,7 +114,6 @@ async function eventPrint(event) {
   function startsWithAnyCommand(msgText, commands) {
     return commands.some(command => msgText.startsWith(command));
   }
-
 
   if (msgText.startsWith("/feed")) {
     queueRequest(handleFeed, msgText.replace("/feed", ""), message, msgID, chat, sender.id);
@@ -183,7 +182,6 @@ async function eventPrint(event) {
       // console.log("flag", data?.data[0]?.endpoint)
 
       if (flag == "/help") {
-        queueRequest(gemini, chat, msgID, msgText, message.senderId);
         queueRequest(replyWithHelp, chat, msgID, msgText, sender.id);
       }
       else if (flag == "/about") {
@@ -196,15 +194,12 @@ async function eventPrint(event) {
         queueRequest(replyWithGlobalMenu, chat, msgID, msgText, sender.id);
       }
       else if (flag == "/gen") {
-        queueRequest(gemini, chat, msgID, msgText, message.senderId);
-        queueRequest(genButtons, sender.id, chat, msgID, translatedMsg|| msgText);
+        queueRequest(genButtons, sender.id, chat, msgID, translatedMsg || msgText);
       }
       else if (flag == "/song" && needsDownloading) {
-        queueRequest(gemini, chat, msgID, msgText, message.senderId);
         queueRequest(songDownloader, chat, msgID, msgText);
       }
       else if (flag == "/lyrics") {
-        queueRequest(gemini, chat, msgID, msgText, message.senderId);
         queueRequest(lyricsFinder, chat, msgID, msgText);
       }
       else if (flag == "/stop") {
@@ -214,19 +209,15 @@ async function eventPrint(event) {
         queueRequest(gemini, chat, msgID, msgText);
       }
       else if (flag == "/userid") {
-        queueRequest(gemini, chat, msgID, msgText, message.senderId);
         queueRequest(replyWithUserId, chat, msgID, message, event.message?.fwdFrom);
       }
       else if (flag == "/ping") {
-        queueRequest(gemini, chat, msgID, msgText, message.senderId);
         queueRequest(replyWithPing, chat, msgID, startSeconds);
       }
       else if (flag == "/gif") {
-        queueRequest(gemini, chat, msgID, msgText, message.senderId);
         queueRequest(replyWithRandomGif, chat, msgID);
       }
       else if (flag == "/fun") {
-        queueRequest(gemini, chat, msgID, msgText, message.senderId);
         queueRequest(replyWithFun, chat, msgID, message, sender);
       }
       else if (flag == "/isign") {
@@ -243,7 +234,26 @@ async function eventPrint(event) {
         // // console.log("Invalid flag from N8N:", flag);
       }
     } catch (error) {
-      console.error("Error sending message to N8N:", error?.message);
+      console.error("Error sending message to N8N:", error);
+
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        console.error("Response data:", error.response.data);
+        console.error("Response status:", error.response.status);
+        console.error("Response headers:", error.response.headers);
+
+        // Check if the response data contains a message
+        if (error.response.data && error.response.data.message) {
+          console.error("Error message:", error.response.data.message);
+        }
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error("No response received:", error.request);
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        console.error("Error setting up the request:", error.message);
+      }
     }
   }
 
