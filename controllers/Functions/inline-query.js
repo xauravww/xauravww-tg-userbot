@@ -12,7 +12,10 @@ export async function inlineQueryHandler(){
     // // console.log("Received inline query:", event.query);
     const messageIds = await getArr(); 
 
-    if (event.query) {
+    if (event.query && event.query.startsWith('.audio')) {
+      // Extract the query without the '.audio' prefix
+      const searchTerm = event.query.substring('.audio'.length).trim();
+
       const result = await client.invoke(
         new Api.channels.GetMessages({
           channel: process.env.MY_AUDIO_CHANNEL,
@@ -23,7 +26,8 @@ export async function inlineQueryHandler(){
       if (result?.messages && result.messages.length > 0) {
         const dummyResults = result.messages.map((message) => {
           // // console.log('message?.message', message?.message);
-          const regex = new RegExp(event.query, 'i');
+          // Use the extracted searchTerm for the regex
+          const regex = new RegExp(searchTerm, 'i');
           if (regex.test(message?.message)) {
             if (message.media && message.media.document) {
               const media = message.media.document;
@@ -60,6 +64,25 @@ export async function inlineQueryHandler(){
               results: dummyResults,
               queryId: event.queryId,
               gallery: false,
+            })
+          );
+        } else {
+          // If no results found, send a "no results found" message
+          await client.invoke(
+            new Api.messages.SetInlineBotResults({
+              results: [new Api.InputBotInlineResult({ // Use InputBotInlineResult for text-only results
+                id: "0", // A unique ID for this result
+                type: "article", // or "article", "photo", "gif", "video", "audio", "document", "location", "venue", "contact"
+                title: "No results found",
+                description: "Your search returned no results.",
+                 sendMessage: new Api.InputBotInlineMessageText({
+                    message: "No results found for your query.",
+                    noWebpage: true // Prevent a web page preview
+                })
+              })],
+              queryId: event.queryId,
+              gallery: false,
+              cacheTime: 10 // Cache for 10 seconds
             })
           );
         }
