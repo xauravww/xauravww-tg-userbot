@@ -1,133 +1,109 @@
-// Import necessary modules
 import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const ddownr = require('denethdev-ytmp3');
 import path from "path";
 import fs from "fs";
 import { client } from "../../../client-init.js";
 import youtubesearchapi from "youtube-search-api";
-import {
-  setvalueData,
-  getvalueData,
-  deletevalueData,
-} from "../../utils/localStorageUtils.js";
-import axios from "axios";
 
-// Global object to store downloaded songs
-const songsGlobalObject = {};
-
-async function main(songUrl, songName) {
-  try {
-    // Fetch stream URL from API
-    const apiResponse = await axios.post(process.env.YT_DOWNLOADER_API_URL, {
-      audioBitrate: "96",
-      downloadMode: "audio",
-      filenameStyle: "pretty",
-      url: songUrl,
-    });
-
-    if (apiResponse.data.status !== "tunnel") {
-      throw new Error("Failed to get stream URL");
-    }
-
-    const streamUrl = apiResponse.data.url;
-    // console.log("Stream URL received:", streamUrl);
-
-    // Define the path for the MP3 file using path.join()
-    const mp3FilePath = path.join(process.cwd(), `${songName}.mp3`);
-
-    // Download the MP3 file
-    const response = await axios({
-      method: "get",
-      url: streamUrl,
-      responseType: "stream",
-    });
-
-    // Pipe the response data to a file
-    const writer = fs.createWriteStream(mp3FilePath);
-
-    response.data.pipe(writer);
-
-    return new Promise((resolve, reject) => {
-      writer.on("finish", () => {
-        // console.log(`MP3 file saved to ${mp3FilePath}`);
-        resolve(mp3FilePath); // Return the path of the saved MP3 file
-      });
-      writer.on("error", (error) => {
-        console.error("Error writing MP3 file:", error);
-        reject(error); // Reject the promise on error
-      });
-    });
-  } catch (error) {
-    console.error("Error in main downloader function:", error);
-    return null; // Return null if an error occurs
-  }
-}
 // Function to handle song download and send the MP3 file to the user
 export async function songDownloader(chat, msgID, msgText) {
-  const songName = msgText.replace(/\/song/, ""); // Extract the song name from the message
-  const songUrl = await getSongUrl(msgText);
+  const songName = msgText.replace(/\/song/, "").trim(); // Extract the song name
+  const songUrl = await getSongUrl(songName);
 
   if (!songUrl) {
-    console.error("Failed to get song URL");
     await client.sendMessage(chat, {
-      message: "Failed to retrieve the song URL.",
+      message: "❌ Failed to retrieve the song URL.",
       replyTo: msgID,
     });
     return;
   }
 
-  // Check if the song already exists in localStorage
-  const storedFileName = getvalueData(songUrl);
-  if (storedFileName && fs.existsSync(storedFileName)) {
-    // console.log(`Sending the previously downloaded file for ${songName}...`);
-    await client.sendFile(chat, {
-      file: storedFileName,
-      caption: `Here is your requested song: ${songName} (previously downloaded)`,
-      replyTo: msgID,
-    });
-
-    deletevalueData(songUrl);
-    // // console.log(`Deleted ${songName} from localStorage after sending.`);
-    return;
-  }
-
-  const firstReplyMessage = await client.sendMessage(chat, {
-    message: "Downloading the song for you...",
+  const progressMessage = await client.sendMessage(chat, {
+    message: `🔍 Searching and downloading **"${songName}"** for you...`,
     replyTo: msgID,
+    parseMode: "markdown",
   });
 
-  const downloadedFileName = await main(songUrl, songName);
-  // console.log("Downloaded file at " + downloadedFileName);
+  try {
+    const response = await ddownr.download(songUrl, 'mp3');
+    console.log("ddownr response:", response);
 
-  if (downloadedFileName && fs.existsSync(downloadedFileName)) {
-    setvalueData(songUrl, downloadedFileName);
-    songsGlobalObject[songUrl] = downloadedFileName;
-
-    await client.editMessage(chat, {
-      message: firstReplyMessage.id,
-      text: "File has been downloaded successfully. \n Hold On !!! Sending you in a few seconds.",
-    });
-
-    await client.sendFile(chat, {
-      file: downloadedFileName,
-      caption: `Here is your requested song: ${songName}`,
-      replyTo: msgID,
-    });
-
-    try {
-      await fs.promises.unlink(downloadedFileName);
-      // // console.log(`Successfully deleted file: ${downloadedFileName}`);
-    } catch (err) {
-      console.error("Failed to delete file:", err);
+    if (!response || !response.downloadUrl) {
+      throw new Error("Failed to get download URL from ddownr");
     }
-  } else {
+
+    const rawTitle = response.title || songName;
+    const image = response.image;
+    
+    // Sanitize the title to create a safe filename
+    const sanitizedTitle = rawTitle.replace(/[\/\\:*?"<>|]/g, "_");
+    const MAX_FILENAME_LENGTH = 100;
+    const safeTitle = sanitizedTitle.length > MAX_FILENAME_LENGTH 
+      ? sanitizedTitle.slice(0, MAX_FILENAME_LENGTH) 
+      : sanitizedTitle;
+
+    const filePath = path.join(process.cwd(), `${safeTitle}.mp3`);
+
+    // Download the mp3 file
+    const downloadedFile = await downloadFile(response.downloadUrl, filePath);
+
+    //delete the progressMessage
+    if(progressMessage){
+      await client.deleteMessages(chat, [progressMessage.id], {revoke:true});
+    }
+    // Send the thumbnail image with title
+    if (image) {
+      await client.sendFile(chat, {
+        file: image,
+        caption: `🎧 *${rawTitle}*\nSending your song below 👇`,
+        replyTo: msgID,
+      });
+    }
+
+    // Send the downloaded MP3 file
+    await client.sendFile(chat, {
+      file: downloadedFile,
+      caption: `🎧 Here is your requested song: *${rawTitle}*`,
+      replyTo: msgID,
+      parseMode: "markdown",
+    });
+
+    // Clean up the downloaded file after sending
+    try {
+      await fs.promises.unlink(downloadedFile);
+    } catch (err) {
+      console.error("❌ Failed to delete file:", err);
+    }
+
+  } catch (error) {
+    console.error("❌ Error in songDownloader:", error);
     await client.sendMessage(chat, {
-      message: "Failed to download the requested song.",
+      message: "❌ Failed to download the requested song.",
       replyTo: msgID,
     });
   }
 }
 
-// Function to get the YouTube URL based on the song name or input string
+// Download the file from URL to disk
+async function downloadFile(url, filePath) {
+  const axios = require('axios');
+  const response = await axios({
+    method: "get",
+    url: url,
+    responseType: "stream",
+  });
+
+  const writer = fs.createWriteStream(filePath);
+  response.data.pipe(writer);
+
+  return new Promise((resolve, reject) => {
+    writer.on("finish", () => resolve(filePath));
+    writer.on("error", reject);
+  });
+}
+
+// Get YouTube video URL from song name or input
 async function getSongUrl(inputString) {
   try {
     const data = await youtubesearchapi.GetListByKeyword(
@@ -138,14 +114,14 @@ async function getSongUrl(inputString) {
     );
 
     if (data?.items?.length > 0) {
-      const videoLink = `https://www.youtube.com/watch?v=${data.items[0].id}`;
-      return videoLink;
+      const videoId = data.items[0].id;
+      return `https://www.youtube.com/watch?v=${videoId}`;
     } else {
-      console.error("No video found for the given input string.");
+      console.error("No video found for the input string.");
       return null;
     }
   } catch (error) {
-    console.error("Error in getting song URL:", error);
-    return null; // Return null in case of any error
+    console.error("Error in getSongUrl:", error);
+    return null;
   }
 }

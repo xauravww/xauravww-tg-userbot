@@ -16,7 +16,8 @@ import { songDownloader } from "./Functions/yt2mp3/song.js";
 import { replyWithGlobalMenu } from "./Functions/global-settings-menu.js";
 import { handleBtnsMediaHandler, handleImage, handleVideo, handleFeed } from "./Functions/media-handler.js";
 import axios from "axios";
-
+import { Button } from "telegram/tl/custom/button.js";
+import { replyWithYtdlDownloadButtons } from "./Functions/image-gens/ytdlmp3-handler.js";
 // Queue for incoming events
 const queue = [];
 let isProcessingQueue = false;
@@ -54,7 +55,6 @@ async function processQueue() {
 //   });
 // }
 
-// Modify the eventPrint function to be used with the queue
 async function eventPrint(event) {
   // // console.log(event);
   // // console.log("event.className",event?.originalUpdate?.className)
@@ -66,24 +66,20 @@ async function eventPrint(event) {
 
   const message = event.message;
 
-
   const msgID = event.message.id;
   const msgText = message.text.toLowerCase();
   const peerId = event.message.peerId.chatId || event.message.peerId.channelId;
-  // // console.log(event)
 
   const chat = await client.getInputEntity(event.message.peerId);
   const sender = await message.getSender();
-  // // console.log("typeof event.message" ,typeof event.message)
+
   const isVideo = event?.message?.media?.document?.mimeType == "video/mp4" || event?.message?.media?.document?.mimeType == "video/webm"
   const isWebp = event?.message?.media?.document?.mimeType == "image/webp"
   const isNormalPhoto = event?.message?.photo
   const isVoiceOrAudio = event?.message?.media?.document?.mimeType == "audio/mpeg" || event?.message?.media?.document?.mimeType == "audio/ogg"
   const isSenderABot = event?.message?.viaBotId == null
-  // // console.log(event?.message?.media?.document?.mimeType)
-  // audio/mpeg or audio/ogg
+
   if (!isVoiceOrAudio && !event.message.photo && !isWebp && !isVideo && (!sender || !sender.id || !chat || !msgID || !msgText || !message)) {
-    // console.log("Invalid event data");
     return;
   }
 
@@ -91,17 +87,9 @@ async function eventPrint(event) {
     queueRequest(handleBtnsMediaHandler, chat, msgID, event.message, isVideo, sender.id, isVoiceOrAudio)
   }
 
-
   if ((isNormalPhoto || isWebp || isVideo) && event.message.isPrivate && isSenderABot) {
     queueRequest(handleBtnsMediaHandler, chat, msgID, event.message, isVideo, sender.id, isVoiceOrAudio);
   }
-
-
-  //will use this for separate messages
-
-  // if (!isVoiceOrAudio && !isNormalPhoto && !isWebp && !isVideo && (event.message.mentioned || (event.message.isPrivate)) && !msgText.startsWith("/")) {
-  //   queueRequest(gemini, chat, msgID, msgText, message.senderId);
-  // }
 
   const allCommands = [
     '/feed', '/isign', '/vsign', '/gif', 'gif', '/fun', 'fun', '/ping', 'ping',
@@ -113,6 +101,22 @@ async function eventPrint(event) {
   // Function to check if the message text starts with any command
   function startsWithAnyCommand(msgText, commands) {
     return commands.some(command => msgText.startsWith(command));
+  }
+
+  // New code to detect YouTube links and send download buttons
+  const youtubeUrlPattern = /https?:\/\/(www\.)?youtube\.com\/watch\?v=[\w-]{11}/i;
+  if (youtubeUrlPattern.test(msgText)) {
+    // await client.sendMessage(chat, {
+    //   message: "YouTube link detected!! Do you want to download this?",
+    //   replyTo: msgID,
+    //   buttons: [
+    //     Button.inline("Yes", Buffer.from(`yes-ytdlmp3`)),
+    //     Button.inline("No", Buffer.from(`no-ytdlmp3`)),
+    //   ]
+
+    // });
+    queueRequest(replyWithYtdlDownloadButtons,chat,msgID,msgText,sender.id)
+    return;
   }
 
   if (msgText.startsWith("/feed")) {
@@ -149,15 +153,36 @@ async function eventPrint(event) {
   }
 
   if (msgText.startsWith("/gen")) {
-    queueRequest(genButtons, sender.id, chat, msgID, msgText);
+    if (msgText.trim() === "/gen") {
+      await client.sendMessage(chat, {
+        message: "Please provide a query with /gen command. Example: /gen a cat",
+        replyTo: msgID,
+      });
+    } else {
+      queueRequest(genButtons, sender.id, chat, msgID, msgText);
+    }
   }
 
   if (msgText.startsWith("/song")) {
-    queueRequest(songDownloader, chat, msgID, msgText);
+    if (msgText.trim() === "/song") {
+      await client.sendMessage(chat, {
+        message: "Please provide a query with /song command. Example: /song angrezi beat",
+        replyTo: msgID,
+      });
+    } else {
+      queueRequest(songDownloader, chat, msgID, msgText);
+    }
   }
 
   if (msgText.startsWith("/lyrics") || msgText.startsWith("lyrics")) {
-    queueRequest(lyricsFinder, chat, msgID, msgText);
+    if (msgText.trim() === "/lyrics" || msgText.trim() === "lyrics") {
+      await client.sendMessage(chat, {
+        message: "Please provide a query with /lyrics command. Example: /lyrics song_name by artist_name",
+        replyTo: msgID,
+      });
+    } else {
+      queueRequest(lyricsFinder, chat, msgID, msgText);
+    }
   }
 
   if (msgText.startsWith("/about") || msgText.startsWith("about")) {
@@ -172,10 +197,11 @@ async function eventPrint(event) {
   if (msgText.startsWith("/set") || msgText.startsWith("set")) {
     queueRequest(replyWithGlobalMenu, chat, msgID, msgText, sender.id);
   }
+
   if (!startsWithAnyCommand(msgText, allCommands)) {
     try {
       //call to n8n
-      if(msgText.startsWith("🤫 a whisper has been sent")) return
+      if (msgText.startsWith("🤫 a whisper has been sent")) return
       const data = await axios.post(process.env.N8N, { message: msgText })
       const flag = data?.data[0]?.endpoint || data?.data?.endpoint
       const translatedMsg = data?.data[0]?.message || data?.data?.message

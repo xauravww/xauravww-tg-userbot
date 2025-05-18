@@ -126,6 +126,7 @@ export async function replyWithHelp(chat, msgId, message, userId) {
   
     [Button.inline("Image Generator", Buffer.from(`image-gen|${userId}`))],
     [Button.inline("Song Downloader", Buffer.from(`song|${userId}`))],
+    [Button.inline("Inline Queries", Buffer.from(`inline-queries|${userId}`))],
     [
       Button.inline("Userid", Buffer.from(`userid|${userId}`)),
       Button.inline("Uptime & Ping", Buffer.from(`ping|${userId}`)),
@@ -138,19 +139,29 @@ export async function replyWithHelp(chat, msgId, message, userId) {
       Button.inline("Sign Image", Buffer.from(`i-sign|${userId}`)),
       Button.inline("Sign Video", Buffer.from(`v-sign|${userId}`)),
     ],
+    [Button.inline("Whisper Bot", Buffer.from(`whisper-bot|${userId}`))],
   ];
   
 
   // Send a message with buttons to the user
   const initialMsg = await client.sendMessage(chat, {
     message: `<pre>Choose your option:</pre>
-    `,
+Use the buttons below to get help on each feature. For commands like /gen, /song, /lyrics, please provide a query after the command. For example:
+/gen a cat
+/song angrezi beat
+/lyrics song_name by artist_name
+
+For inline queries, you can use the bot inline mode to search audio or send private whispers.
+For whisper bot, use the format: <secret-msg> @recipient or <secret> <user_id>
+`,
     replyTo: msgId,
     buttons: buttons,
     parseMode: "md2",
   });
   globalchat[userId].initialMsgId = initialMsg?.id
 }
+
+
 
 
 
@@ -275,7 +286,7 @@ if(!originalUserId && action) return
       // console.log("image-gen button clicked");
       await client.editMessage(chat,{
         message:initialMsgId,
-        text:  "Use /song command with query params \n\ne.g. /song angrezi beat yo yo honey \n\nThis will send you mp3 file of that song directly from youtube. \n\nNote: Sometimes it can take 10-15 seconds.",
+        text:  "Use /song command with query params \n\ne.g. /song angrezi beat yo yo honey \n\nThis will send you mp3 file of that song directly from youtube. \n\nNote: Sometimes it can take 10-15 seconds.\n\nYou can also send youtube url directly to bot as a message.",
         buttons:[
           Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
         ],
@@ -334,13 +345,45 @@ if(!originalUserId && action) return
         parseMode: "md2",
       })
       break;
+    case "inline-queries":
+      await client.editMessage(chat,{
+        message:initialMsgId,
+        text: `Inline Queries allow you to search audio or send private whispers directly from the chat input.\n\nUse the bot inline mode and type:\n1. .audio <search_term> - to search audio\n2. <secret-msg> @recipient or <secret> <user_id> - to send a private whisper\n\nExample:\n.audio hello\nsecret message @username`,
+        buttons:[
+          Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
+        ],
+        parseMode: "md2",
+      })
+      break;
+    case "whisper-bot":
+      await client.editMessage(chat,{
+        message:initialMsgId,
+        text: `Whisper Bot allows you to send private messages that only the recipient can reveal.\n\nUse the format:\n<secret-msg> @recipient or <secret> <user_id>\n\nClick the "Reveal Whisper" button to see the message.`,
+        buttons:[
+          Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
+        ],
+        parseMode: "md2",
+      })
+      break;
 
-    // default:
-    //   // console.log("Unknown callback data:", callbackData);
-    //   // await client.sendMessage(chat, {
-    //   //   message: "Unknown button clicked. Please try again.",
-    //   //   replyTo: msgId,
-    //   // });
-    //   break;
-  }
-}
+    case "inline-queries":
+      await client.editMessage(chat,{
+        message:initialMsgId,
+        text: `Inline Queries allow you to search audio or send private whispers directly from the chat input.\n\nUse the bot inline mode and type:\n1. .audio <search_term> - to search audio\n2. <secret-msg> @recipient or <secret> <user_id> - to send a private whisper\n\nExample:\n.audio hello\nsecret message @username`,
+        buttons:[
+          Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
+        ],
+        parseMode: "md2",
+      })
+      break;
+    case "whisper-bot":
+      await client.editMessage(chat,{
+        message:initialMsgId,
+        text: `Whisper Bot allows you to send private messages that only the recipient can reveal.\n\nUse the format:\n<secret-msg> @recipient or <secret> <user_id>\n\nClick the "Reveal Whisper" button to see the message.`,
+        buttons:[
+          Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
+        ],
+        parseMode: "md2",
+      })
+      break;
+  }}

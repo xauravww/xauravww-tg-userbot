@@ -9,6 +9,7 @@ import { genImage2 } from "./speed-gen.js";
 import { genImage4 } from "./replicate-gen.js";
 
 import { Api } from "telegram";
+import { songDownloader } from "../yt2mp3/song.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
