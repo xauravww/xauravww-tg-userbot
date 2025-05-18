@@ -86,7 +86,18 @@ export async function inlineQueryHandler() {
       const match = query.match(/(.*?)(@(?:[\w\d_]{5,}|[0-9]{6,}))$/);
       if (match) {
         const secret = match[1].trim();
-        const recipient = match[2].trim();
+        let rawRecipient = match[2].trim();  // e.g., "@123456789" or "@username123"
+        let recipient = rawRecipient.slice(1); // remove the '@'
+
+        let finalRecipient;
+
+        if (/^\d+$/.test(recipient)) {
+          // All digits → treat as user ID
+          finalRecipient = recipient;
+        } else {
+          // Not all digits → treat as username
+          finalRecipient = await client.getPeerId(recipient);
+        }
 
         if (typeof recipient !== 'string' || typeof secret !== 'string') {
           return;
@@ -115,31 +126,30 @@ export async function inlineQueryHandler() {
           );
           return;
         }
-
-       const results = [
-  new Api.InputBotInlineResult({
-    id: `whisper-${event.queryId}`,
-    title: `Whisper for ${recipient}`,
-    description: `Private whisper for ${recipient}`,
-    type: "article",
-    sendMessage: new Api.InputBotInlineMessageText({
-      message: `🤫 A whisper has been sent. Only ${recipient} can reveal it.`,
-      noWebpage: true,
-      replyMarkup: new Api.ReplyInlineMarkup({
-        rows: [
-          new Api.KeyboardButtonRow({
-            buttons: [
-              new Api.KeyboardButtonCallback({
-                text: "Reveal Whisper",
-                data: Buffer.from(`whisper::${recipient}::${secret}::${event.userId}`),
+        const results = [
+          new Api.InputBotInlineResult({
+            id: `whisper-${event.queryId}`,
+            title: `Whisper for ${recipient}`,
+            description: `Private whisper for ${recipient}`,
+            type: "article",
+            sendMessage: new Api.InputBotInlineMessageText({
+              message: `🤫 A whisper has been sent. Only ${recipient} can reveal it.`,
+              noWebpage: true,
+              replyMarkup: new Api.ReplyInlineMarkup({
+                rows: [
+                  new Api.KeyboardButtonRow({
+                    buttons: [
+                      new Api.KeyboardButtonCallback({
+                        text: "Reveal Whisper",
+                        data: Buffer.from(`whisper::${finalRecipient}::${secret}::${event.userId}`),
+                      }),
+                    ],
+                  }),
+                ],
               }),
-            ],
+            }),
           }),
-        ],
-      }),
-    }),
-  }),
-];
+        ];
 
         await client.invoke(
           new Api.messages.SetInlineBotResults({
@@ -182,20 +192,20 @@ client.addEventHandler(ButtonHandler, new CallbackQuery({}));
 // Callback handler for button clicks
 export async function ButtonHandler(event) {
   const clickedUserId = event.query.userId;
-if(!clickedUserId) return
+  if (!clickedUserId) return
   const callbackData = event.query.data.toString("utf-8").trim();
   const callbackQueryId = event.query.queryId;
 
   // Expected format: whisper::<recipientId>::<secret>::<senderId>
+
   if (!callbackData.startsWith("whisper::")) return;
 
   const parts = callbackData.split("::");
   if (parts.length < 4) return;
-
-  console.log("parts",parts)
+  
+  console.log("parts", parts)
 
   const [, recipientId, secret, senderId] = parts;
-
   if (
     clickedUserId.toString() !== recipientId.toString() &&
     clickedUserId.toString() !== senderId.toString()
