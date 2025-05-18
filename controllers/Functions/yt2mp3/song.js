@@ -9,8 +9,8 @@ import youtubesearchapi from "youtube-search-api";
 // Function to handle song download and send the MP3 file to the user
 export async function songDownloader(chat, msgID, msgText) {
   const songName = msgText.replace(/\/song/, "").trim(); // Extract the song name
-  const songUrl = await getSongUrl(songName);
-
+  const songUrl = await getSongUrl(songName,chat,msgID);
+if(songUrl=="VIDEO_LENGTH_EXCEEDS") return
   if (!songUrl) {
     await client.sendMessage(chat, {
       message: "❌ Failed to retrieve the song URL.",
@@ -104,7 +104,7 @@ async function downloadFile(url, filePath) {
 }
 
 // Get YouTube video URL from song name or input
-async function getSongUrl(inputString) {
+async function getSongUrl(inputString,chat,msgID) {
   try {
     const data = await youtubesearchapi.GetListByKeyword(
       inputString,
@@ -115,13 +115,18 @@ async function getSongUrl(inputString) {
 
     if (data?.items?.length > 0) {
       const videoId = data.items[0].id;
+      if(parseInt(data.items[0].length.simpleText.split(':')[0])>5) throw new Error("VIDEO_LENGTH_EXCEEDS")
       return `https://www.youtube.com/watch?v=${videoId}`;
     } else {
       console.error("No video found for the input string.");
       return null;
     }
   } catch (error) {
-    console.error("Error in getSongUrl:", error);
+    console.error("Error in getSongUrl:", error.message);
+    if(error.message=="VIDEO_LENGTH_EXCEEDS"){
+      await client.sendMessage(chat, {message:"Video length is greater than 5 minutes"})
+      return error.message
+    }
     return null;
   }
 }
