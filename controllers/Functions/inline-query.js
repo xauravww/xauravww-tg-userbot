@@ -83,7 +83,7 @@ export async function inlineQueryHandler() {
     else {
       const query = event.query;
       const MAX_WORDS = 200;
-      const match = query.match(/(.*?)(@[\w\d_]{5,}|[0-9]{6,})$/);
+      const match = query.match(/(.*?)(@(?:[\w\d_]{5,}|[0-9]{6,}))$/);
       if (match) {
         const secret = match[1].trim();
         const recipient = match[2].trim();
@@ -157,7 +157,7 @@ export async function inlineQueryHandler() {
               title: "Invalid Input - Click me",
               description: "Know how to use whisper bot",
               sendMessage: new Api.InputBotInlineMessageText({
-                message: "Please use the format: <secret-msg> @recipient or <secret> <user_id>",
+                message: "Please use the format: <secret-msg> @<recipient user_name or user_id>\n@funwalabot hello @1223342423 \n @funwalabot hello @username_of_ur_frnd",
                 noWebpage: true
               })
             })],

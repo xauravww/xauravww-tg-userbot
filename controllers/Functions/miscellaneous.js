@@ -348,7 +348,7 @@ if(!originalUserId && action) return
     case "inline-queries":
       await client.editMessage(chat,{
         message:initialMsgId,
-        text: `Inline Queries allow you to search audio or send private whispers directly from the chat input.\n\nUse the bot inline mode and type:\n1. .audio <search_term> - to search audio\n2. <secret-msg> @recipient or <secret> <user_id> - to send a private whisper\n\nExample:\n.audio hello\nsecret message @username`,
+        text: "Inline Queries let you search audio or send private whispers directly from the chat input.\n\nUse the bot inline mode and type:\n\n1. @funwalabot .audio <search_term> — to search audio\n2.@funwalabot <your secret message> @username or @funwalabot <your secret> @<user_id> — to send a private whisper\n\nExamples:\n.audio never gonna give you up\nI like pancakes @john_doe\nThe code is 1234 @123456789",
         buttons:[
           Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
         ],
