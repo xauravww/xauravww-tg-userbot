@@ -175,6 +175,7 @@ async function eventPrint(event) {
   if (!startsWithAnyCommand(msgText, allCommands)) {
     try {
       //call to n8n
+      if(msgText.startsWith("🤫 a whisper has been sent")) return
       const data = await axios.post(process.env.N8N, { message: msgText })
       const flag = data?.data[0]?.endpoint || data?.data?.endpoint
       const translatedMsg = data?.data[0]?.message || data?.data?.message

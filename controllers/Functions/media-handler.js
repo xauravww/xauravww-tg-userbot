@@ -305,10 +305,11 @@ client.addEventHandler(ButtonHandler, new CallbackQuery({}));
 async function ButtonHandler(event) {
   // Get the userId from the event (user who clicked the button)
   const clickedUserId = event.query.userId;
+if(!clickedUserId) return
   const callbackData = event.query.data.toString("utf-8").trim(); // Get the callback data
   const callbackQueryId = event.query.queryId;
   // Access chat and msgId from globalchat
-  const chat = globalchat[clickedUserId]?.chat || event.query.peer.userId;
+  const chat = globalchat[clickedUserId]?.chat || event.query?.peer?.userId;
   const msgId = globalchat[clickedUserId]?.msgId;
   const photoObject = globalchat[clickedUserId]?.photoObject;
   const msgText = globalchat[clickedUserId]?.msgText;
@@ -317,6 +318,7 @@ async function ButtonHandler(event) {
 
   // Split the callback data to get the action and original userId
   const [action, originalUserId] = callbackData.split("|");
+if(!originalUserId && action) return
 
   // Ensure that only the user who initiated the process can click the button
   if (clickedUserId.toString() !== originalUserId.toString()) {
