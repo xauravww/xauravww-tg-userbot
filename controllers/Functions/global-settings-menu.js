@@ -66,8 +66,8 @@ if(!clickedUserId) return
 
   // Split the callback data to get the action and original userId
   const [action, originalUserId] = callbackData.split("|");
-if(!originalUserId && action) return
-const ownerId = process.env.OWNER_USERID ? process.env.OWNER_USERID.split(" ") : []
+  if (!originalUserId && action) return;
+  const ownerId = process.env.OWNER_USERID ? process.env.OWNER_USERID.split(" ") : [];
   // Ensure that only the user who initiated the process can click the button
   if (clickedUserId.toString() !== originalUserId.toString()) {
     // Send a message back to the chat if the user is not the one who initiated
@@ -106,58 +106,56 @@ const ownerId = process.env.OWNER_USERID ? process.env.OWNER_USERID.split(" ") :
   // console.log("Action is: " + action);
   switch (action) {
     case "change-text-model":
-      // console.log("change text model button clicked");
-      // console.log("ownerid: " + +ownerId +  typeof +ownerId)
-      // console.log("clickedUserId: " + +clickedUserId +  typeof +clickedUserId)
-      if (+ownerId != +clickedUserId) {
-        // Send a message back to the chat if the user is not the one who initiated
+      if (!ownerId.includes(clickedUserId.toString())) {
         await client.invoke(
           new Api.messages.SetBotCallbackAnswer({
-            queryId: callbackQueryId, // Use the query ID from event
+            queryId: callbackQueryId,
             message: "Only Owner / Sudo Admins can execute this",
-            alert: true, // Show as an alert popup
+            alert: true,
           })
         );
-    
-        return; // Return early if the clicked user is different
+        return;
       }
 
-
-      const textModelsButtons =[
-        [
-          Button.inline("Pro", Buffer.from(`change-pro|${originalUserId}`)),
-          Button.inline("Flash", Buffer.from(`change-flash|${originalUserId}`)),
-          Button.inline("Voice Toggle", Buffer.from(`change-voice|${originalUserId}`)),
-        ]
+      const textModelsButtons = [
+        [Button.inline("Gemini Pro", Buffer.from(`change-gemini-pro|${originalUserId}`))],
+        [Button.inline("Gemini Flash", Buffer.from(`change-gemini-flash|${originalUserId}`))],
+        [Button.inline("Nvidia Pro", Buffer.from(`change-nvidia-pro|${originalUserId}`))],
+        [Button.inline("Voice Toggle", Buffer.from(`change-voice|${originalUserId}`))],
       ];
-      
-      await client.editMessage(chat,{
-        text: `Current model is ${getGlobalValue("textModel") || process.env.GEMINI_MODEL_NAME.split(" ")[0]} \n<pre>Choose your model:</pre>
-        `,
+
+      await client.editMessage(chat, {
+        text: `Current model is ${getGlobalValue("model_mode") || "gemini-flash"} \n<pre>Choose your model:</pre>`,
         message: globalchat[originalUserId].initialMsgId,
         buttons: textModelsButtons,
         parseMode: "md2",
-      })
-      
+      });
+
       break;
-      case "change-pro":
-        setGlobalValue(globalchat, originalUserId, "textModel",process.env.MODEL_NAME_GEMINI.split(" ")[0])
-        await client.editMessage(chat,{
-          text: `Successfully changed model to ${process.env.MODEL_NAME_GEMINI.split(" ")[0]}
-          `,
-          message: globalchat[originalUserId].initialMsgId,
-          parseMode: "md2",
-        })
-        break
-      case "change-flash":
-        setGlobalValue(globalchat, originalUserId,"textModel",process.env.MODEL_NAME_GEMINI.split(" ")[1])
-        await client.editMessage(chat,{
-          text: `Successfully changed model to ${process.env.MODEL_NAME_GEMINI.split(" ")[1]}
-          `,
-          message: globalchat[originalUserId].initialMsgId,
-          parseMode: "md2",
-        })
-        break;
+    case "change-gemini-pro":
+      setGlobalValue(globalchat, originalUserId, "model_mode", "gemini-pro");
+      await client.editMessage(chat, {
+        text: `Successfully changed model to Gemini Pro`,
+        message: globalchat[originalUserId].initialMsgId,
+        parseMode: "md2",
+      });
+      break;
+    case "change-gemini-flash":
+      setGlobalValue(globalchat, originalUserId, "model_mode", "gemini-flash");
+      await client.editMessage(chat, {
+        text: `Successfully changed model to Gemini Flash`,
+        message: globalchat[originalUserId].initialMsgId,
+        parseMode: "md2",
+      });
+      break;
+    case "change-nvidia-pro":
+      setGlobalValue(globalchat, originalUserId, "model_mode", "nvidia-pro");
+      await client.editMessage(chat, {
+        text: `Successfully changed model to Nvidia Pro`,
+        message: globalchat[originalUserId].initialMsgId,
+        parseMode: "md2",
+      });
+      break;
       case "change-voice":
         setGlobalValue(globalchat, originalUserId,"voice_toggle",!getGlobalValue("voice_toggle"))
         await client.editMessage(chat,{
@@ -168,12 +166,12 @@ const ownerId = process.env.OWNER_USERID ? process.env.OWNER_USERID.split(" ") :
         })
         break;
 
-    // default:
-    //   // console.log("Unknown callback data:", callbackData);
-    //   // await client.sendMessage(chat, {
-    //   //   message: "Unknown button clicked. Please try again.",
-    //   //   replyTo: msgId,
-    //   // });
-    //   break;
+      // default:
+      //   // console.log("Unknown callback data:", callbackData);
+      //   // await client.sendMessage(chat, {
+      //   //   message: "Unknown button clicked. Please try again.",
+      //   //   replyTo: msgId,
+      //   // });
+      //   break;
   }
 }

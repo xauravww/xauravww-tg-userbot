@@ -1,4 +1,3 @@
-// Import necessary modules
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
@@ -17,6 +16,7 @@ import { replyWithGlobalMenu } from "./Functions/global-settings-menu.js";
 import { handleBtnsMediaHandler, handleImage, handleVideo, handleFeed } from "./Functions/media-handler.js";
 import axios from "axios";
 import { replyWithYtdlDownloadButtons } from "./Functions/image-gens/ytdlmp3-handler.js";
+import { getGlobalValue } from "./utils/global-context.js";
 
 // Queue for incoming events
 const priorityQueue = [];
@@ -75,6 +75,16 @@ async function eventPrint(event) {
   }
 
   if ((isNormalPhoto || isWebp || isVideo) && event.message.isPrivate && isSenderABot) {
+    // // Check if Nvidia model is active
+    // const modelMode = getGlobalValue("model_mode");
+    // if (modelMode !== "nvidia-pro") {
+    //   await client.sendMessage(chat, {
+    //     message: "Please switch to Nvidia Pro model for image recognition using /set command.",
+    //     replyTo: msgID,
+    //   });
+    //   return;
+    // }
+    // // If Nvidia model is active, proceed with handling image
     queueRequest(handleBtnsMediaHandler, 2, chat, msgID, event.message, isVideo, sender.id, isVoiceOrAudio);
   }
 
@@ -172,11 +182,16 @@ async function eventPrint(event) {
   if (!startsWithAnyCommand(msgText, allCommands)) {
     try {
       if (msgText.startsWith("🤫 a whisper has been sent")) return;
-      const data = await axios.post(process.env.N8N, { message: msgText });
-      const flag = data?.data[0]?.endpoint || data?.data?.endpoint;
-      const translatedMsg = data?.data[0]?.message || data?.data?.message;
-      const needsDownloading = data?.data[0]?.download || data?.data?.download;
 
+      // Use AI-based classification function
+      const { classifyAI } = await import("./Functions/classify-ai.js");
+      const classification = await classifyAI(msgText, message, sender.id);
+      console.log("classification mgs.js", classification)
+      // if (!classification) return
+      const flag = classification.endpoint;
+      const translatedMsg = classification.message;
+      const needsDownloading = classification.download;
+console.log("flag",flag)
       if (flag == "/help") {
         queueRequest(replyWithHelp, 3, chat, msgID, msgText, sender.id);
       } else if (flag == "/about") {
@@ -213,7 +228,7 @@ async function eventPrint(event) {
         queueRequest(gemini, 1, chat, msgID, msgText, message.senderId);
       }
     } catch (error) {
-      console.error("Error sending message to N8N:", error);
+      console.error("Error in AI-based message classification:", error);
       // Error handling remains unchanged; omitted for brevity
     }
   }
