@@ -14,16 +14,17 @@ const globalchat = {}
 
 export async function classifyAI(text, message, userId) {
   // System prompt for classification
+  const basePrompt = process.env.SYSTEM_INSTRUCTIONS_GEMINI
   const classificationPrompt = `
 You are a message classifier 
 
 Classify the given message into one of the following endpoints based on its intent. Return only a JSON object in the format:
 
 \`\`\`json
-{ "endpoint": "<selected_endpoint>", "message": "<concise English-translated request>", "download": <true_or_false> }
+{ "endpoint": "<selected_endpoint>", "message": "<concise English-translated request>", "download": <true_or_false> ,"response": "<response-when-ask-endpoint-used>" }
 \`\`\`
 
-When something is not clear, use only \`/ask\`. Do not use \`/song\` unless the name of a music/song is explicitly mentioned for download or related actions.
+When something is not clear, use only \`/ask\`. Do not use \`/song\` unless the name of a music/song is explicitly mentioned for download or related actions.Always add a response field when an something is not clear or /ask endpoint is used.
 
 ### Endpoint Selection Criteria:
 1. **/gif**: Use this when the message requests a random GIF.
@@ -46,6 +47,7 @@ const allCommands = [
 
 If the message is asking for code, explanations, or general knowledge, classify it under \`/ask\` instead of \`/gen\`.
 `;
+//not using classification prompt , will use it in future , by default /ask will be called
 
   if (!text) return
 
@@ -53,12 +55,15 @@ If the message is asking for code, explanations, or general knowledge, classify 
 
   // If Nvidia model is active, proceed with handling image
   console.log("text", text)
-  const classificationResponse = await gemini(null, null, classificationPrompt + "\nUser message: " + text);
-console.log("classificationResponse",classificationResponse)
+  const classificationResponse = await gemini(null, null, basePrompt  + "\nUser message: " + text);
+  console.log("classificationResponse", classificationResponse)
   // Parse the JSON response safely
   let classification;
   try {
-    classification = JSON.parse(classificationResponse);
+    // const rawInput = classificationResponse.trim();
+    // const cleanedJsonString = rawInput.replace(/^```json\s*|\s*```$/g, '');
+    // classification = JSON.parse(classificationResponse);
+    classification = classificationResponse
     console.log("classification:", classification)
   } catch (e) {
     // Fallback to default classification

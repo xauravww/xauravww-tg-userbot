@@ -8,7 +8,8 @@ import { getGlobalValue } from "../../utils/global-context.js";
 
 import chatHistoryManager from "./chatHistoryManager.js";
 
-export async function gemini(chat, msgId, messageText, senderId) {
+const globalchat ={}
+export async function gemini(chat, msgId, messageText, senderId, isSlashEndpoint = false) {
   // Remove the query prefix
   const newString = messageText.replace("ask ", "");
   const voiceToggle = getGlobalValue("voice_toggle");
@@ -36,39 +37,19 @@ export async function gemini(chat, msgId, messageText, senderId) {
       // Define the filter text
       const filterText = process.env.SYSTEM_INSTRUCTIONS_GEMINI;
 
+      // Add user message to chat history for context
+      chatHistoryManager.addMessage(senderId, { role: "user", parts: [{ text: newString }] });
+
       // Handle the Gemini query
       const { html, responseText } = await handleGeminiQuery(
         filterText + "My Question: " + newString,
         senderId
       );
 
-      // Update the message with the search result
-      const truncatedText =
-        responseText?.toString()?.length > 4096
-          ? responseText?.substring(0, 4093) + "..."
-          : responseText?.toString();
-      const truncatedHtml =
-        html?.toString()?.length > 4096 ? html?.substring(0, 4093) + "..." : html?.toString();
-      const formattedHtml = `${truncatedHtml}`;
+      // Return only the responseText string for classification or other uses
+      return responseText?.toString() || "";
 
-      if (!voiceToggle && msgToBeEditedId) {
-        // Edit the message with the formatted text
-        await client.editMessage(chat, {
-          message: msgToBeEditedId,
-          text: formattedHtml,
-          replyTo: msgId,
-          parseMode: "html",
-        });
-      } else if (voiceToggle && msgToBeEditedId) {
-        // Log the audio URL (if available) and reply with audio
-        const audio = await axios.post(process.env.N8N_AUDIO_WEBHOOK, { message: truncatedText });
-        console.log("Audio: ", audio?.data[0]?.url);
-        console.log("truncatedText: ", truncatedText);
-        const audioUrl = audio?.data[0]?.url;
-        if (audioUrl) {
-          queueRequest(replyWithAudio, chat, msgToBeEditedId, msgId, truncatedText, audioUrl);
-        }
-      }
+
     } else if (modelMode === "nvidia-pro") {
       // For Nvidia model, assume image base64 string or text input is provided after "ask "
       let input = newString.trim();
@@ -92,8 +73,10 @@ export async function gemini(chat, msgId, messageText, senderId) {
           response = await invokeNvidiaApi(input, undefined, senderId);
         }
 
-        const responseText = response.choices?.[0]?.message?.content || JSON.stringify(response);
-
+        let responseText = response.choices?.[0]?.message?.content || JSON.stringify(response);
+        const rawInput = responseText.trim();
+        const cleanedJsonString = rawInput.replace(/^```json\s*|\s*```$/g, '');
+        responseText = isSlashEndpoint? JSON.parse(cleanedJsonString).response : responseText;
         const truncatedText =
           responseText.length > 4096 ? responseText.substring(0, 4093) + "..." : responseText;
 
@@ -110,6 +93,8 @@ export async function gemini(chat, msgId, messageText, senderId) {
           if (audioUrl) {
             queueRequest(replyWithAudio, chat, msgToBeEditedId, msgId, truncatedText, audioUrl);
           }
+        } else {
+          return responseText
         }
       } catch (error) {
         if (msgToBeEditedId) {

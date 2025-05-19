@@ -7,7 +7,7 @@ import { client, connectClient, startSeconds } from "../client-init.js";
 import { replyWithPing } from "./Functions/ping.js";
 import { stopServer } from "./Functions/crash.js";
 import { replyWithRandomGif } from "./Functions/gifs.js";
-import { replyWithFun, replyWithUserId, replyWithAbout, replyWithStart, replyWithHelp, replyWithAudio } from "./Functions/miscellaneous.js";
+import { replyWithFun, replyWithUserId, replyWithAbout, replyWithStart, replyWithHelp, replyWithAudio, replyWithCustomMessage } from "./Functions/miscellaneous.js";
 import { gemini } from "./Functions/gemini/query_gemini-api.js";
 import { lyricsFinder } from "./Functions/lyrics.js";
 import { genButtons } from "./Functions/image-gens/buttons-image-gens.js";
@@ -133,7 +133,7 @@ async function eventPrint(event) {
     queueRequest(stopServer, 1, chat, msgID, msgText);
   }
   if (msgText.startsWith("/ask") || msgText.startsWith("ask")) {
-    queueRequest(gemini, 1, chat, msgID, msgText);
+    queueRequest(gemini, 1, chat, msgID, msgText, true);
   }
   if (msgText.startsWith("/gen")) {
     if (msgText.trim() === "/gen") {
@@ -187,46 +187,51 @@ async function eventPrint(event) {
       const { classifyAI } = await import("./Functions/classify-ai.js");
       const classification = await classifyAI(msgText, message, sender.id);
       console.log("classification mgs.js", classification)
-      // if (!classification) return
+      if (!classification) return
       const flag = classification.endpoint;
       const translatedMsg = classification.message;
       const needsDownloading = classification.download;
-console.log("flag",flag)
-      if (flag == "/help") {
-        queueRequest(replyWithHelp, 3, chat, msgID, msgText, sender.id);
-      } else if (flag == "/about") {
-        queueRequest(replyWithAbout, 3, chat, msgID, msgText);
-      } else if (flag == "/start") {
-        queueRequest(replyWithStart, 3, chat, msgID, msgText);
-      } else if (flag == "/set") {
-        queueRequest(replyWithGlobalMenu, 3, chat, msgID, msgText, sender.id);
-      } else if (flag == "/gen") {
-        queueRequest(genButtons, 1, sender.id, chat, msgID, translatedMsg || msgText);
-      } else if (flag == "/song" && needsDownloading) {
-        queueRequest(songDownloader, 1, chat, msgID, msgText);
-      } else if (flag == "/lyrics") {
-        queueRequest(lyricsFinder, 3, chat, msgID, msgText);
-      } else if (flag == "/stop") {
-        queueRequest(stopServer, 1, chat, msgID, msgText);
-      } else if (flag == "/ask") {
-        queueRequest(gemini, 1, chat, msgID, msgText);
-      } else if (flag == "/userid") {
-        queueRequest(replyWithUserId, 2, chat, msgID, message, event.message?.fwdFrom);
-      } else if (flag == "/ping") {
-        queueRequest(replyWithPing, 2, chat, msgID, startSeconds);
-      } else if (flag == "/gif") {
-        queueRequest(replyWithRandomGif, 5, chat, msgID);
-      } else if (flag == "/fun") {
-        queueRequest(replyWithFun, 5, chat, msgID, message, sender);
-      } else if (flag == "/isign") {
-        queueRequest(handleImage, 4, msgText.replace("/isign", ""), message, msgID, chat, sender.id);
-      } else if (flag == "/vsign") {
-        queueRequest(handleVideo, 4, chat, msgID, message, msgText.replace("/vsign", ""), sender.id);
-      } else if (flag == "/feed") {
-        queueRequest(handleFeed, 4, msgText.replace("/feed", ""), message, msgID, chat, sender.id);
-      } else {
-        queueRequest(gemini, 1, chat, msgID, msgText, message.senderId);
-      }
+      queueRequest(replyWithCustomMessage, 1, chat, msgID, classification)
+
+      // console.log("flag",flag)
+
+      //commented all classifications will use one  by one if needed some
+
+      // if (flag == "/help") {
+      //   queueRequest(replyWithHelp, 3, chat, msgID, msgText, sender.id);
+      // } else if (flag == "/about") {
+      //   queueRequest(replyWithAbout, 3, chat, msgID, msgText);
+      // } else if (flag == "/start") {
+      //   queueRequest(replyWithStart, 3, chat, msgID, msgText);
+      // } else if (flag == "/set") {
+      //   queueRequest(replyWithGlobalMenu, 3, chat, msgID, msgText, sender.id);
+      // } else if (flag == "/gen") {
+      //   queueRequest(genButtons, 1, sender.id, chat, msgID, translatedMsg || msgText);
+      // } else if (flag == "/song" && needsDownloading) {
+      //   queueRequest(songDownloader, 1, chat, msgID, msgText);
+      // } else if (flag == "/lyrics") {
+      //   queueRequest(lyricsFinder, 3, chat, msgID, msgText);
+      // } else if (flag == "/stop") {
+      //   queueRequest(stopServer, 1, chat, msgID, msgText);
+      // } else if (flag == "/ask") {
+      //   queueRequest(replyWithCustomMessage, 1, chat, msgID, classification);
+      // } else if (flag == "/userid") {
+      //   queueRequest(replyWithUserId, 2, chat, msgID, message, event.message?.fwdFrom);
+      // } else if (flag == "/ping") {
+      //   queueRequest(replyWithPing, 2, chat, msgID, startSeconds);
+      // } else if (flag == "/gif") {
+      //   queueRequest(replyWithRandomGif, 5, chat, msgID);
+      // } else if (flag == "/fun") {
+      //   queueRequest(replyWithFun, 5, chat, msgID, message, sender);
+      // } else if (flag == "/isign") {
+      //   queueRequest(handleImage, 4, msgText.replace("/isign", ""), message, msgID, chat, sender.id);
+      // } else if (flag == "/vsign") {
+      //   queueRequest(handleVideo, 4, chat, msgID, message, msgText.replace("/vsign", ""), sender.id);
+      // } else if (flag == "/feed") {
+      //   queueRequest(handleFeed, 4, msgText.replace("/feed", ""), message, msgID, chat, sender.id);
+      // } else {
+      //   queueRequest(gemini, 1, chat, msgID, msgText, message.senderId);
+      // }
     } catch (error) {
       console.error("Error in AI-based message classification:", error);
       // Error handling remains unchanged; omitted for brevity

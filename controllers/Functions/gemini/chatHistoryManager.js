@@ -19,7 +19,10 @@ function pruneHistory(history) {
 // Class to manage chat histories per senderId
 class ChatHistoryManager {
   constructor() {
-    this.chatHistories = {};
+    this.chatHistories = {
+        //add system message
+        
+    };
   }
 
   getHistory(senderId) {

@@ -22,7 +22,7 @@ export async function replyWithUserId(chat, msgId, message, fwdFrom) {
         parseMode: "md2",
       });
     } else {
-      const msgText = fwdId? `Forwarded message userid: <code>${fwdId}</code> \n[Link to his/her profile](tg://openmessage?user_id=${fwdId}) \nProfile will only open in case you have interacted or visited user profile at least once in a group or using direct messages or whatever.` : `Userid is hidden by user. \nBut you can still get that id using unoffical Telegram apps like Telegraph or using userbots.`;
+      const msgText = fwdId ? `Forwarded message userid: <code>${fwdId}</code> \n[Link to his/her profile](tg://openmessage?user_id=${fwdId}) \nProfile will only open in case you have interacted or visited user profile at least once in a group or using direct messages or whatever.` : `Userid is hidden by user. \nBut you can still get that id using unoffical Telegram apps like Telegraph or using userbots.`;
       await client.sendMessage(chat, {
         message: msgText,
         replyTo: msgId,
@@ -41,6 +41,16 @@ export async function replyWithFun(chat, msgId, message, sender) {
     await client.sendMessage(chat, { message: msgText, replyTo: msgId });
   } catch (error) {
     console.error("Error occurred while replying with fun message:", error);
+  }
+}
+export async function replyWithCustomMessage(chat, msgId, message) {
+  try {
+    // const rawInput = message.trim();
+    // const cleanedJsonString = rawInput.replace(/^```json\s*|\s*```$/g, '');
+    // const response = JSON.parse(cleanedJsonString).response
+    await client.sendMessage(chat, { message:message, replyTo: msgId });
+  } catch (error) {
+    console.error("Error occurred while replying with message:", error);
   }
 }
 export async function replyWithAbout(chat, msgId, message, sender) {
@@ -96,8 +106,8 @@ export async function replyWithAudio(chat, msgToBeEditedId, msgId, message, audi
 
     // Send the downloaded file
     // await client.sendFile(chat, { file: filePath, replyTo: msgId, caption: message });
-    await client.deleteMessages(chat, [msgToBeEditedId], {revoke:true});
-    await client.sendFile(chat, {file: filePath, replyTo: msgId, caption: message || "" });
+    await client.deleteMessages(chat, [msgToBeEditedId], { revoke: true });
+    await client.sendFile(chat, { file: filePath, replyTo: msgId, caption: message || "" });
     // Delete the file after sending
     fs.unlink(filePath, (err) => {
       if (err) console.error("Error deleting file:", err);
@@ -123,7 +133,7 @@ export async function replyWithHelp(chat, msgId, message, userId) {
       Button.inline("AI Chatbot", Buffer.from(`ai-chatbot|${userId}`)),
       Button.inline("Random Gifs", Buffer.from(`random-gifs|${userId}`)),
     ],
-  
+
     [Button.inline("Image Generator", Buffer.from(`image-gen|${userId}`))],
     [Button.inline("Song Downloader", Buffer.from(`song|${userId}`))],
     [Button.inline("Inline Queries", Buffer.from(`inline-queries|${userId}`))],
@@ -141,7 +151,7 @@ export async function replyWithHelp(chat, msgId, message, userId) {
     ],
     [Button.inline("Whisper Bot", Buffer.from(`whisper-bot|${userId}`))],
   ];
-  
+
 
   // Send a message with buttons to the user
   const initialMsg = await client.sendMessage(chat, {
@@ -173,7 +183,7 @@ client.addEventHandler(ButtonHandler, new CallbackQuery({}));
 export async function ButtonHandler(event) {
   // Get the userId from the event (user who clicked the button)
   const clickedUserId = event.query.userId;
-if(!clickedUserId) return
+  if (!clickedUserId) return
   const callbackData = event.query.data.toString("utf-8").trim(); // Get the callback data
   const callbackQueryId = event.query.queryId;
   // // Access chat and msgId from globalchat
@@ -182,14 +192,14 @@ if(!clickedUserId) return
   const initialMsgId = globalchat[clickedUserId]?.initialMsgId
   // Split the callback data to get the action and original userId
   const [action, originalUserId] = callbackData.split("|");
-if(!originalUserId && action) return
+  if (!originalUserId && action) return
 
-   const buttons = [
+  const buttons = [
     [
       Button.inline("AI Chatbot", Buffer.from(`ai-chatbot|${clickedUserId}`)),
       Button.inline("Random Gifs", Buffer.from(`random-gifs|${clickedUserId}`)),
     ],
-  
+
     [Button.inline("Image Generator", Buffer.from(`image-gen|${clickedUserId}`))],
     [Button.inline("Song Downloader", Buffer.from(`song|${clickedUserId}`))],
     [
@@ -229,10 +239,10 @@ if(!originalUserId && action) return
   switch (action) {
     case "ai-chatbot":
       // console.log("ai-chatbot button clicked");
-      await client.editMessage(chat,{
-        message:initialMsgId,
+      await client.editMessage(chat, {
+        message: initialMsgId,
         text: `There are 2 ways to ask in any language: \n1. /ask What is the capital of India  \n2. Replying to bot messages will also work. \n\n\n If u got any error like too many requests then please try again.`,
-        buttons:[
+        buttons: [
           Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
         ],
         parseMode: "md2",
@@ -240,10 +250,10 @@ if(!originalUserId && action) return
       break;
     case "random-gifs":
       // console.log("random gifs button clicked");
-      await client.editMessage(chat,{
-        message:initialMsgId,
-        text:  "Use command /gif \nThis command doesn't need any extra query to be passed , this will generate a random gif",
-        buttons:[
+      await client.editMessage(chat, {
+        message: initialMsgId,
+        text: "Use command /gif \nThis command doesn't need any extra query to be passed , this will generate a random gif",
+        buttons: [
           Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
         ],
         parseMode: "md2",
@@ -251,10 +261,10 @@ if(!originalUserId && action) return
       break;
     case "image-gen":
       // console.log("image-gen button clicked");
-      await client.editMessage(chat,{
-        message:initialMsgId,
-        text:  "Use /gen command with query params: \ne.g. /gen a cat \nDisclaimer: There is no image censorship filters in Schnell and Replicate model , so it might generate some inappropriate things.",
-        buttons:[
+      await client.editMessage(chat, {
+        message: initialMsgId,
+        text: "Use /gen command with query params: \ne.g. /gen a cat \nDisclaimer: There is no image censorship filters in Schnell and Replicate model , so it might generate some inappropriate things.",
+        buttons: [
           Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
         ],
         parseMode: "md2",
@@ -262,10 +272,10 @@ if(!originalUserId && action) return
       break;
     case "ping":
       // console.log("image-gen button clicked");
-      await client.editMessage(chat,{
-        message:initialMsgId,
-        text:   "Use /ping command to check server uptime and response time.",
-        buttons:[
+      await client.editMessage(chat, {
+        message: initialMsgId,
+        text: "Use /ping command to check server uptime and response time.",
+        buttons: [
           Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
         ],
         parseMode: "md2",
@@ -273,10 +283,10 @@ if(!originalUserId && action) return
       break;
     case "userid":
       // console.log("image-gen button clicked");
-      await client.editMessage(chat,{
-        message:initialMsgId,
-        text:  "1. Use /userid command to get your userid. \n2. Forward any user message directly to bot",
-        buttons:[
+      await client.editMessage(chat, {
+        message: initialMsgId,
+        text: "1. Use /userid command to get your userid. \n2. Forward any user message directly to bot",
+        buttons: [
           Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
         ],
         parseMode: "md2",
@@ -284,10 +294,10 @@ if(!originalUserId && action) return
       break;
     case "song":
       // console.log("image-gen button clicked");
-      await client.editMessage(chat,{
-        message:initialMsgId,
-        text:  "Use /song command with query params \n\ne.g. /song angrezi beat yo yo honey \n\nThis will send you mp3 file of that song directly from youtube. \n\nNote: Sometimes it can take 10-15 seconds.\n\nYou can also send youtube url directly to bot as a message.",
-        buttons:[
+      await client.editMessage(chat, {
+        message: initialMsgId,
+        text: "Use /song command with query params \n\ne.g. /song angrezi beat yo yo honey \n\nThis will send you mp3 file of that song directly from youtube. \n\nNote: Sometimes it can take 10-15 seconds.\n\nYou can also send youtube url directly to bot as a message.",
+        buttons: [
           Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
         ],
         parseMode: "md2",
@@ -295,10 +305,10 @@ if(!originalUserId && action) return
       break;
     case "lyrics":
       // console.log("image-gen button clicked");
-      await client.editMessage(chat,{
-        message:initialMsgId,
-        text:   "Use /lyrics command with query params \n\ne.g. /lyrics song_name by artist_name \n\nNote: Regional songs are not supported\n\n😵😵This feature is in maintenance mode",
-        buttons:[
+      await client.editMessage(chat, {
+        message: initialMsgId,
+        text: "Use /lyrics command with query params \n\ne.g. /lyrics song_name by artist_name \n\nNote: Regional songs are not supported\n\n😵😵This feature is in maintenance mode",
+        buttons: [
           Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
         ],
         parseMode: "md2",
@@ -306,10 +316,10 @@ if(!originalUserId && action) return
       break;
     case "i-sign":
       // console.log("img-sign button clicked");
-      await client.editMessage(chat,{
-        message:initialMsgId,
-        text:    "Returns sticker file which we can use in @Stickers bot for static stickers\n/isign overlayMsg,color,fontSize\nAll fields are optional\nYou can simply leave blank if you dont want to give specific custom arguments\ne.g. <pre>/isign ,,,100</pre>\n<pre>/isign hello,red,50,100</pre>\n<pre>/isign</pre>\nYou can use any variation you want\nYou can use this in direct message or in any group(having admin rights otherwise it can't access group history and will show unexpected results)\nTry and test any type of color (explained in detail in video sign help) except RGB format",
-        buttons:[
+      await client.editMessage(chat, {
+        message: initialMsgId,
+        text: "Returns sticker file which we can use in @Stickers bot for static stickers\n/isign overlayMsg,color,fontSize\nAll fields are optional\nYou can simply leave blank if you dont want to give specific custom arguments\ne.g. <pre>/isign ,,,100</pre>\n<pre>/isign hello,red,50,100</pre>\n<pre>/isign</pre>\nYou can use any variation you want\nYou can use this in direct message or in any group(having admin rights otherwise it can't access group history and will show unexpected results)\nTry and test any type of color (explained in detail in video sign help) except RGB format",
+        buttons: [
           Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
         ],
         parseMode: "md2",
@@ -317,10 +327,10 @@ if(!originalUserId && action) return
       break;
     case "v-sign":
       // console.log("video-sign button clicked");
-      await client.editMessage(chat,{
-        message:initialMsgId,
-        text:    "Returns webm file which we can use in @Stickers bot for video stickers\n<pre><code>/vsign overlayMsg ,color ,fontSize ,position</code></pre>\nAll fields are optional\nYou can simply leave blank if you dont want to give that custom argument\ne.g. <pre><code>/vsign namastey,,20,100</code></pre>\n<pre><code>/vsign hello,red,20,100</code></pre>\n<pre><code>/vsign</code></pre>\nYou can try out your own variations\nNote: I set a limit of 5MB/upload\nAlso decompresses video and clip it upto 3 seconds for telegram optimized video stickers\nYou can use this in direct message or in any group(having admin rights otherwise it can't access group history and will show unexpected results)\n\nSome popular colors input:\n<pre>black, white, red, green, blue, yellow, cyan, magenta, aqua, fuchsia, gray, lime, maroon, navy, olive, purple, silver, teal or any type of #hex color like #ffffff etc.\nBut RGB color won't work</pre>\n\nPosition can take 2 type of values:\n<pre>1. bottom 50</pre>\n<pre>2. top 50</pre>\nYou can give any value after top or bottom which decides it Y axis position of text overlay.\nPS:Keep it small",
-        buttons:[
+      await client.editMessage(chat, {
+        message: initialMsgId,
+        text: "Returns webm file which we can use in @Stickers bot for video stickers\n<pre><code>/vsign overlayMsg ,color ,fontSize ,position</code></pre>\nAll fields are optional\nYou can simply leave blank if you dont want to give that custom argument\ne.g. <pre><code>/vsign namastey,,20,100</code></pre>\n<pre><code>/vsign hello,red,20,100</code></pre>\n<pre><code>/vsign</code></pre>\nYou can try out your own variations\nNote: I set a limit of 5MB/upload\nAlso decompresses video and clip it upto 3 seconds for telegram optimized video stickers\nYou can use this in direct message or in any group(having admin rights otherwise it can't access group history and will show unexpected results)\n\nSome popular colors input:\n<pre>black, white, red, green, blue, yellow, cyan, magenta, aqua, fuchsia, gray, lime, maroon, navy, olive, purple, silver, teal or any type of #hex color like #ffffff etc.\nBut RGB color won't work</pre>\n\nPosition can take 2 type of values:\n<pre>1. bottom 50</pre>\n<pre>2. top 50</pre>\nYou can give any value after top or bottom which decides it Y axis position of text overlay.\nPS:Keep it small",
+        buttons: [
           Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
         ],
         parseMode: "md2",
@@ -328,38 +338,38 @@ if(!originalUserId && action) return
       break;
     case "other":
       // console.log("image-gen button clicked");
-      await client.editMessage(chat,{
-        message:initialMsgId,
-        text:   "This bot also sends all my instagram reels from my dm to my telegram channel. (Not for public use as of now) \nOther cmds are: \n1. /about  \n2. /stop secret_password",
-        buttons:[
+      await client.editMessage(chat, {
+        message: initialMsgId,
+        text: "This bot also sends all my instagram reels from my dm to my telegram channel. (Not for public use as of now) \nOther cmds are: \n1. /about  \n2. /stop secret_password",
+        buttons: [
           Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
         ],
         parseMode: "md2",
       })
       break;
     case "back":
-      await client.editMessage(chat,{
-        message:initialMsgId,
+      await client.editMessage(chat, {
+        message: initialMsgId,
         text: `<pre>Choose your option:</pre>`,
-        buttons:buttons,
+        buttons: buttons,
         parseMode: "md2",
       })
       break;
     case "inline-queries":
-      await client.editMessage(chat,{
-        message:initialMsgId,
+      await client.editMessage(chat, {
+        message: initialMsgId,
         text: "Inline Queries let you search audio or send private whispers directly from the chat input.\n\nUse the bot inline mode and type:\n\n1. @funwalabot .audio <search_term> — to search audio\n2.@funwalabot <your secret message> @username or @funwalabot <your secret> @<user_id> — to send a private whisper\n\nExamples:\n.audio never gonna give you up\nI like pancakes @john_doe\nThe code is 1234 @123456789",
-        buttons:[
+        buttons: [
           Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
         ],
         parseMode: "md2",
       })
       break;
     case "whisper-bot":
-      await client.editMessage(chat,{
-        message:initialMsgId,
+      await client.editMessage(chat, {
+        message: initialMsgId,
         text: `Whisper Bot allows you to send private messages that only the recipient can reveal.\n\nUse the format:\n<secret-msg> @recipient or <secret> <user_id>\n\nClick the "Reveal Whisper" button to see the message.`,
-        buttons:[
+        buttons: [
           Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
         ],
         parseMode: "md2",
@@ -367,23 +377,24 @@ if(!originalUserId && action) return
       break;
 
     case "inline-queries":
-      await client.editMessage(chat,{
-        message:initialMsgId,
+      await client.editMessage(chat, {
+        message: initialMsgId,
         text: `Inline Queries allow you to search audio or send private whispers directly from the chat input.\n\nUse the bot inline mode and type:\n1. .audio <search_term> - to search audio\n2. <secret-msg> @recipient or <secret> <user_id> - to send a private whisper\n\nExample:\n.audio hello\nsecret message @username`,
-        buttons:[
+        buttons: [
           Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
         ],
         parseMode: "md2",
       })
       break;
     case "whisper-bot":
-      await client.editMessage(chat,{
-        message:initialMsgId,
+      await client.editMessage(chat, {
+        message: initialMsgId,
         text: `Whisper Bot allows you to send private messages that only the recipient can reveal.\n\nUse the format:\n<secret-msg> @recipient or <secret> <user_id>\n\nClick the "Reveal Whisper" button to see the message.`,
-        buttons:[
+        buttons: [
           Button.inline("Back", Buffer.from(`back|${clickedUserId}`)),
         ],
         parseMode: "md2",
       })
       break;
-  }}
+  }
+}
