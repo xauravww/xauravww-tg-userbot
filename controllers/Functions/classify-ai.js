@@ -47,16 +47,16 @@ const allCommands = [
 
 If the message is asking for code, explanations, or general knowledge, classify it under \`/ask\` instead of \`/gen\`.
 `;
-//not using classification prompt , will use it in future , by default /ask will be called
+  //not using classification prompt , will use it in future , by default /ask will be called
 
   if (!text) return
 
 
 
   // If Nvidia model is active, proceed with handling image
-  console.log("text", text)
-  const classificationResponse = await gemini(null, null, basePrompt  + "\nUser message: " + text);
-  console.log("classificationResponse", classificationResponse)
+
+  const classificationResponse = await gemini(null, null, "\nUser message: " + text);
+
   // Parse the JSON response safely
   let classification;
   try {
@@ -64,10 +64,10 @@ If the message is asking for code, explanations, or general knowledge, classify 
     // const cleanedJsonString = rawInput.replace(/^```json\s*|\s*```$/g, '');
     // classification = JSON.parse(classificationResponse);
     classification = classificationResponse
-    console.log("classification:", classification)
+
   } catch (e) {
     // Fallback to default classification
-    console.log(e)
+
     classification = { endpoint: "/ask", message: text, download: false };
   }
 

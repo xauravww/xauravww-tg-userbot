@@ -38,7 +38,7 @@ export async function handleBtnsMediaHandler(
   };
 
   // Call the gemini AI with classification prompt and user text
-  console.log("doing classification")
+  // console.log("doing classification")
   // Check if Nvidia model is active
   const modelMode = getGlobalValue("model_mode");
   if (modelMode !== "nvidia-pro") {

@@ -8,29 +8,34 @@ function calculateTokenCount(text) {
 
 // Function to prune history if it exceeds the token limit
 function pruneHistory(history) {
-  let tokenCount = history.reduce((sum, msg) => sum + calculateTokenCount(msg.parts[0].text), 0);
+  let tokenCount = history.reduce((sum, msg) => {
+    const text = msg.parts ? (msg.parts[0]?.text || "") : (msg.content || "");
+    return sum + calculateTokenCount(text);
+  }, 0);
 
   while (tokenCount > TOKEN_LIMIT && history.length > 1) {
     const removedMsg = history.shift();
-    tokenCount -= calculateTokenCount(removedMsg.parts[0].text);
+    const text = removedMsg.parts ? (removedMsg.parts[0]?.text || "") : (removedMsg.content || "");
+    tokenCount -= calculateTokenCount(text);
   }
 }
+
 
 // Class to manage chat histories per senderId
 class ChatHistoryManager {
   constructor() {
-    this.chatHistories = {
-        //add system message
-        
-    };
+    this.chatHistories = {};
   }
 
   getHistory(senderId) {
     if (!this.chatHistories[senderId]) {
-      this.chatHistories[senderId] = [];
+      this.chatHistories[senderId] = [
+        { role: "system", content: process.env.SYSTEM_INSTRUCTIONS_GEMINI }
+      ];
     }
     return this.chatHistories[senderId];
   }
+
 
   addMessage(senderId, message) {
     const history = this.getHistory(senderId);

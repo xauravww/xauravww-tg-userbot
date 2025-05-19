@@ -27,7 +27,7 @@ if(songUrl=="VIDEO_LENGTH_EXCEEDS") return
 
   try {
     const response = await ddownr.download(songUrl, 'mp3');
-    console.log("ddownr response:", response);
+
 
     if (!response || !response.downloadUrl) {
       throw new Error("Failed to get download URL from ddownr");

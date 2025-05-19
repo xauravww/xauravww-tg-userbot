@@ -22,7 +22,7 @@ export async function invokeNvidiaApi(inputText, imageB64, senderId) {
       "model": "meta/llama-4-maverick-17b-128e-instruct",
       "messages": messages.map(msg => ({
         role: msg.role,
-        content: msg.parts[0].text
+        content: msg.parts ? (msg.parts[0]?.text || "") : (msg.content || "")
       })),
       "max_tokens": 512,
       "temperature": 1.00,
@@ -31,6 +31,7 @@ export async function invokeNvidiaApi(inputText, imageB64, senderId) {
     };
     return await axios.post(invokeUrl, payload, { headers: headers, responseType: stream ? 'stream' : 'json' });
   }
+
 
   try {
     let content = inputText;
@@ -67,7 +68,7 @@ export async function invokeNvidiaApi(inputText, imageB64, senderId) {
       });
       return resultData;
     } else {
-      console.log("response.data", response.data);
+      // console.log("response.data", response.data);
       // Nvidia API may return base64 encoded content or raw text.
       // If content looks like base64, decode it; else return as is.
       if (response.data.choices && response.data.choices[0] && response.data.choices[0].message && response.data.choices[0].message.content) {

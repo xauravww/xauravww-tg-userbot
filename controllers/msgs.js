@@ -186,7 +186,7 @@ async function eventPrint(event) {
       // Use AI-based classification function
       const { classifyAI } = await import("./Functions/classify-ai.js");
       const classification = await classifyAI(msgText, message, sender.id);
-      console.log("classification mgs.js", classification)
+      // console.log("classification mgs.js", classification)
       if (!classification) return
       const flag = classification.endpoint;
       const translatedMsg = classification.message;

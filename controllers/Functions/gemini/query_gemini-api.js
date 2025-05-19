@@ -5,9 +5,9 @@ import { replyWithAudio } from "../miscellaneous.js";
 import axios from "axios";
 import { queueRequest } from "../../msgs.js";
 import { getGlobalValue } from "../../utils/global-context.js";
-
+import showdown from "showdown";
+const converter = new showdown.Converter()
 import chatHistoryManager from "./chatHistoryManager.js";
-
 const globalchat ={}
 export async function gemini(chat, msgId, messageText, senderId, isSlashEndpoint = false) {
   // Remove the query prefix
@@ -81,9 +81,12 @@ export async function gemini(chat, msgId, messageText, senderId, isSlashEndpoint
           responseText.length > 4096 ? responseText.substring(0, 4093) + "..." : responseText;
 
         if (!voiceToggle && msgToBeEditedId) {
+          
+         const html = converter.makeHtml(truncatedText);
+         console.log("html",html)
           await client.editMessage(chat, {
             message: msgToBeEditedId,
-            text: truncatedText,
+            text: html,
             replyTo: msgId,
             parseMode: "html",
           });

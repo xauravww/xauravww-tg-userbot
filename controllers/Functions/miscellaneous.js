@@ -6,6 +6,8 @@ import { Api } from "telegram";
 import fs from 'fs';
 import path from 'path';
 import axios from 'axios';
+import showdown from "showdown";
+const converter = new showdown.Converter()
 
 // Global variable to hold all btn-related data
 const globalchat = {};
@@ -48,7 +50,9 @@ export async function replyWithCustomMessage(chat, msgId, message) {
     // const rawInput = message.trim();
     // const cleanedJsonString = rawInput.replace(/^```json\s*|\s*```$/g, '');
     // const response = JSON.parse(cleanedJsonString).response
-    await client.sendMessage(chat, { message:message, replyTo: msgId });
+    const html = converter.makeHtml(message);
+    console.log("html2",html)
+    await client.sendMessage(chat, { message:html, replyTo: msgId ,parseMode:"html" });
   } catch (error) {
     console.error("Error occurred while replying with message:", error);
   }
