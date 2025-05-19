@@ -83,7 +83,7 @@ export async function gemini(chat, msgId, messageText, senderId, isSlashEndpoint
         if (!voiceToggle && msgToBeEditedId) {
           
          const html = converter.makeHtml(truncatedText);
-         console.log("html",html)
+        //  console.log("html",html)
           await client.editMessage(chat, {
             message: msgToBeEditedId,
             text: html,

@@ -51,6 +51,10 @@ async function eventPrint(event) {
   if (!event.message) {
     return;
   }
+  if(!event.message.mentioned){
+    return
+  }
+
 
   const message = event.message;
   const msgID = event.message.id;
