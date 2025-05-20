@@ -26,9 +26,12 @@ function pruneHistory(history) {
 
 
 // Class to manage chat histories per senderId
+import { getGlobalValue, setGlobalValue } from "../../utils/global-context.js";
+
 class ChatHistoryManager {
   constructor() {
-    this.chatHistories = {};
+    this.globalKey = "nvidiaChatHistories";
+    this.chatHistories = getGlobalValue(this.globalKey) || {};
   }
 
   getHistory(senderId) {
@@ -36,15 +39,16 @@ class ChatHistoryManager {
       this.chatHistories[senderId] = [
         { role: "system", content: process.env.SYSTEM_INSTRUCTIONS_GEMINI }
       ];
+      setGlobalValue(this.globalKey, this.chatHistories);
     }
     return this.chatHistories[senderId];
   }
-
 
   addMessage(senderId, message) {
     const history = this.getHistory(senderId);
     history.push(message);
     pruneHistory(history);
+    setGlobalValue(this.globalKey, this.chatHistories);
   }
 }
 

@@ -1,4 +1,5 @@
 import { GoogleGenAI, createUserContent } from "@google/genai";
+import { getGlobalValue, setGlobalValue } from "../../utils/global-context.js";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -26,7 +27,8 @@ function pruneHistory(history) {
 
 class GeminiChatHistoryManager {
   constructor() {
-    this.chatHistories = {};
+    this.globalKey = "geminiChatHistories";
+    this.chatHistories = getGlobalValue(this.globalKey) || {};
   }
 
   getHistory(senderId) {
@@ -34,6 +36,7 @@ class GeminiChatHistoryManager {
       this.chatHistories[senderId] = [
         { role: "system", parts: [{ text: process.env.SYSTEM_INSTRUCTIONS_GEMINI || "" }] }
       ];
+      setGlobalValue(this.globalKey, this.chatHistories);
     }
     return this.chatHistories[senderId];
   }
@@ -42,6 +45,7 @@ class GeminiChatHistoryManager {
     const history = this.getHistory(senderId);
     history.push(message);
     pruneHistory(history);
+    setGlobalValue(this.globalKey, this.chatHistories);
   }
 
   async sendMessage(senderId, message) {

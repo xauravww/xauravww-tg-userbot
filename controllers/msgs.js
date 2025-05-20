@@ -117,22 +117,22 @@ async function eventPrint(event) {
   if (msgText.startsWith("/vsign")) {
     queueRequest(handleVideo, 4, chat, msgID, message, msgText.replace("/vsign", ""), sender.id);
   }
-  if (msgText.startsWith("/gif") || msgText.startsWith("gif")) {
+  if (msgText.startsWith("/gif")) {
     queueRequest(replyWithRandomGif, 5, chat, msgID);
   }
-  if (msgText.startsWith("/fun") || msgText.startsWith("fun")) {
+  if (msgText.startsWith("/fun") ) {
     queueRequest(replyWithFun, 5, chat, msgID, message, sender);
   }
-  if (msgText.startsWith("/ping") || msgText.startsWith("ping")) {
+  if (msgText.startsWith("/ping")) {
     queueRequest(replyWithPing, 2, chat, msgID, startSeconds);
   }
-  if (msgText.startsWith("/userid") || msgText.startsWith("userid") || event.message.fwdFrom != null) {
+  if (msgText.startsWith("/userid")  || event.message.fwdFrom != null) {
     queueRequest(replyWithUserId, 2, chat, msgID, message, event.message?.fwdFrom);
   }
-  if (msgText.startsWith("/stop") || msgText.startsWith("stop")) {
+  if (msgText.startsWith("/stop")) {
     queueRequest(stopServer, 1, chat, msgID, msgText);
   }
-  if (msgText.startsWith("/ask") || msgText.startsWith("ask")) {
+  if (msgText.startsWith("/ask")) {
     queueRequest(gemini, 1, chat, msgID, msgText, true);
   }
   if (msgText.startsWith("/gen")) {
