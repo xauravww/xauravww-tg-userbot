@@ -51,7 +51,6 @@ export async function replyWithCustomMessage(chat, msgId, message) {
     // const cleanedJsonString = rawInput.replace(/^```json\s*|\s*```$/g, '');
     // const response = JSON.parse(cleanedJsonString).response
     const html = converter.makeHtml(message);
-    console.log("html2",html)
     await client.sendMessage(chat, { message:html, replyTo: msgId ,parseMode:"html" });
   } catch (error) {
     console.error("Error occurred while replying with message:", error);

@@ -169,7 +169,92 @@ async function eventPrint(event) {
     queueRequest(replyWithAbout, 3, chat, msgID, msgText);
   }
   if (msgText.startsWith("/start") || msgText.startsWith("start")) {
+    // Normal /start command handler
     queueRequest(replyWithStart, 3, chat, msgID, msgText);
+  }
+
+  else if (msgText.startsWith("/reveal")) {
+    const parts = msgText.split(" ");
+    if (parts.length > 1) {
+      const whisperKey = parts[1].trim();
+      // Fetch whisper message from Redis
+      const storedData = await redisClient.get(whisperKey);
+      if (!storedData) {
+        await client.sendMessage(chat, {
+          message: "Whisper message expired or not found.",
+          replyTo: msgID,
+        });
+        return;
+      }
+      let whisperData;
+      try {
+        whisperData = JSON.parse(storedData);
+      } catch (e) {
+        whisperData = { message: storedData, senderId: null };
+      }
+      // Check if user is authorized (sender or recipient)
+      if (
+        sender.id.toString() !== (whisperData.senderId ? whisperData.senderId.toString() : null) &&
+        sender.id.toString() !== (whisperData.recipientId ? whisperData.recipientId.toString() : null)
+      ) {
+        await client.sendMessage(chat, {
+          message: "You are not authorized to view this whisper message.",
+          replyTo: msgID,
+        });
+        return;
+      }
+      // Send the whisper message without length limit
+      await client.sendMessage(chat, {
+        message: `🤫 Whisper message:\n\n${whisperData.message}`,
+        replyTo: msgID,
+        parseMode: "markdown",
+      });
+    } else {
+      await client.sendMessage(chat, {
+        message: "Please provide a whisper key to reveal. Usage: /reveal <whisperKey>",
+        replyTo: msgID,
+      });
+    }
+  }
+  else if (msgText.startsWith("/reveal")) {
+    const parts = msgText.split(" ");
+    if (parts.length < 2) {
+      await client.sendMessage(chat, {
+        message: "Please provide a whisper key. Usage: /reveal <whisperKey>",
+        replyTo: msgID,
+      });
+      return;
+    }
+    const whisperKey = parts[1].trim();
+    const storedData = await redisClient.get(whisperKey);
+    if (!storedData) {
+      await client.sendMessage(chat, {
+        message: "Whisper message expired or not found.",
+        replyTo: msgID,
+      });
+      return;
+    }
+    let whisperData;
+    try {
+      whisperData = JSON.parse(storedData);
+    } catch (e) {
+      whisperData = { message: storedData, senderId: null };
+    }
+    if (
+      sender.id.toString() !== (whisperData.senderId ? whisperData.senderId.toString() : null) &&
+      sender.id.toString() !== (whisperData.recipientId ? whisperData.recipientId.toString() : null)
+    ) {
+      await client.sendMessage(chat, {
+        message: "You are not authorized to view this whisper message.",
+        replyTo: msgID,
+      });
+      return;
+    }
+    await client.sendMessage(chat, {
+      message: `🤫 Whisper message:\n\n${whisperData.message}`,
+      replyTo: msgID,
+      parseMode: "markdown",
+    });
   }
   if (msgText.startsWith("/help") || msgText.startsWith("help")) {
     queueRequest(replyWithHelp, 3, chat, msgID, msgText, sender.id);

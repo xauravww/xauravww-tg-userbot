@@ -82,10 +82,11 @@ export async function inlineQueryHandler() {
       }
     }
     else {
-      const query = event.query;
+      const query = event.query.trim();
       const MAX_WORDS = 200;
       const MAX_TTL_MINUTES = 2880; // 2 days max TTL
-      const match = query.match(/(.*?)(@(?:[\w\d_]{5,}|[0-9]{6,}))$/);
+      const match = query.match(/([\s\S]*?)\s+(@[\w\d_]{3,})$/);
+
       if (match) {
         let secret = match[1].trim();
         let rawRecipient = match[2].trim();  // e.g., "@123456789" or "@username123"
@@ -119,15 +120,32 @@ export async function inlineQueryHandler() {
           // Remove TTL from secret message
           secret = secret.replace(/#\d+/, '').trim();
         }
-
-        let finalRecipient;
-
-        if (/^\d+$/.test(recipient)) {
-          // All digits → treat as user ID
-          finalRecipient = recipient;
-        } else {
-          // Not all digits → treat as username
-          finalRecipient = await client.getPeerId(recipient);
+        let finalRecipient
+        try {
+          finalRecipient = /^\d+$/.test(recipient)
+            ? recipient
+            : await client.getPeerId(recipient);
+        } catch (err) {
+          console.error("Failed to resolve recipient:", recipient, err);
+          return await client.invoke(
+            new Api.messages.SetInlineBotResults({
+              results: [
+                new Api.InputBotInlineResult({
+                  id: "0",
+                  type: "article",
+                  title: "User not found",
+                  description: `Can't resolve user: ${recipient}`,
+                  sendMessage: new Api.InputBotInlineMessageText({
+                    message: `User @${recipient} not found or is private.`,
+                    noWebpage: true
+                  }),
+                }),
+              ],
+              queryId: event.queryId,
+              gallery: false,
+              cacheTime: 10,
+            })
+          );
         }
 
         if (typeof recipient !== 'string' || typeof secret !== 'string') {
@@ -184,11 +202,27 @@ export async function inlineQueryHandler() {
                         text: "Reveal Whisper",
                         data: Buffer.from(`whisperKey::${whisperKey}::${finalRecipient}`, 'utf-8').slice(0, 64),
                       }),
-
+                    ],
+                  }),
+                  new Api.KeyboardButtonRow({
+                    buttons: [
+                      new Api.KeyboardButtonCallback({
+                        text: "Send to Bot",
+                        data: Buffer.from(`revealInBot::${whisperKey}::${finalRecipient}`, 'utf-8').slice(0, 64),
+                      }),
+                    ],
+                  }),
+                  new Api.KeyboardButtonRow({
+                    buttons: [
+                      new Api.KeyboardButtonUrl({
+                        text: "Open Bot",
+                        url: `https://t.me/funwalabot`,
+                      }),
                     ],
                   }),
                 ],
               }),
+
               parseMode: "markdown"
             }),
           }),
@@ -201,16 +235,22 @@ export async function inlineQueryHandler() {
             gallery: false,
           })
         );
+
       } else {
+        const queryLength = event.query?.length || 0;
+
+        const title = queryLength >= 255
+          ? `Invalid Input – Limit Reached (${queryLength}/255)`
+          : `Invalid Input – Length: ${queryLength}/255`;
         await client.invoke(
           new Api.messages.SetInlineBotResults({
             results: [new Api.InputBotInlineResult({
               id: "0",
               type: "article",
-              title: "Invalid Input - Click me",
+              title: title,
               description: "Know how to use whisper bot",
               sendMessage: new Api.InputBotInlineMessageText({
-                message: "Please use the format: <secret-msg> @<recipient user_name or user_id>\n@bot secret #x @recipient\n\nWhere #x is optional TTL in minutes (max 2880 = 2 days).",
+                message: "Please use the format: <secret-msg> @<recipient user_name or user_id>\n@bot secret #x @recipient\n\nWhere #x is optional TTL in minutes (max 2880 = 2 days).\n\nTelegram Max characater limit = 255",
                 noWebpage: true
               })
             })],
@@ -234,63 +274,178 @@ export async function ButtonHandler(event) {
     const callbackData = event.query.data.toString("utf-8").trim();
     const callbackQueryId = event.query.queryId;
 
-    console.log("callback",callbackData)
+    console.log("callback", callbackData)
 
-    // Expected format: whisperKey::<key>::<recipientId>::<senderId>
-    if (!callbackData.startsWith("whisperKey::")) return;
+    if (callbackData.startsWith("whisperKey::")) {
+      const parts = callbackData.split("::");
+      if (parts.length < 3) return;
 
-    const parts = callbackData.split("::");
-    if (parts.length < 3) return;
+      const [, whisperKey, recipientId] = parts;
+      // senderId is stored in Redis, so we fetch it for authorization
 
-    const [, whisperKey, recipientId] = parts;
-    // senderId is stored in Redis, so we fetch it for authorization
+      // Fetch whisper message and senderId from Redis
+      const storedData = await redisClient.get(whisperKey);
+      if (!storedData) {
+        await client.invoke(
+          new Api.messages.SetBotCallbackAnswer({
+            queryId: callbackQueryId,
+            message: "Whisper message expired or not found.",
+            alert: true,
+          })
+        );
+        return;
+      }
 
-    // Fetch whisper message and senderId from Redis
-    const storedData = await redisClient.get(whisperKey);
-    if (!storedData) {
+      // storedData format: JSON string with { message: string, senderId: string }
+      let whisperData;
+      try {
+        whisperData = JSON.parse(storedData);
+      } catch (e) {
+        whisperData = { message: storedData, senderId: null };
+      }
+
+      if (
+        clickedUserId.toString() !== recipientId.toString() &&
+        clickedUserId.toString() !== (whisperData.senderId ? whisperData.senderId.toString() : null) &&
+        clickedUserId.toString() !== (whisperData.recipientId ? whisperData.recipientId.toString() : null)
+      ) {
+        // Not recipient or sender — unauthorized
+        await client.invoke(
+          new Api.messages.SetBotCallbackAnswer({
+            queryId: callbackQueryId,
+            message: "Nahi bhai, yeh message tere liye nahi hai. Dusron ke raaz padhna mana hai 😏",
+            alert: true,
+          })
+        );
+        return;
+      }
+
+      // Authorized: show the whisper with expiry info
       await client.invoke(
         new Api.messages.SetBotCallbackAnswer({
           queryId: callbackQueryId,
-          message: "Whisper message expired or not found.",
+          message: `${whisperData.message}`,
           alert: true,
         })
       );
-      return;
-    }
+    } else if (callbackData.startsWith("revealInBot::")) {
+      const parts = callbackData.split("::");
+      if (parts.length < 3) return;
 
-    // storedData format: JSON string with { message: string, senderId: string }
-    let whisperData;
-    try {
-      whisperData = JSON.parse(storedData);
-    } catch (e) {
-      whisperData = { message: storedData, senderId: null };
-    }
+      const [, whisperKey, recipientId] = parts;
 
-    if (
-      clickedUserId.toString() !== recipientId.toString() &&
-      clickedUserId.toString() !== (whisperData.senderId ? whisperData.senderId.toString() : null) &&
-      clickedUserId.toString() !== (whisperData.recipientId ? whisperData.recipientId.toString() : null)
-    ) {
-      // Not recipient or sender — unauthorized
+      // Fetch whisper message and senderId from Redis
+      const storedData = await redisClient.get(whisperKey);
+      if (!storedData) {
+        await client.invoke(
+          new Api.messages.SetBotCallbackAnswer({
+            queryId: callbackQueryId,
+            message: "Whisper message expired or not found.",
+            alert: true,
+          })
+        );
+        return;
+      }
+
+      let whisperData;
+      try {
+        whisperData = JSON.parse(storedData);
+      } catch (e) {
+        whisperData = { message: storedData, senderId: null };
+      }
+
+      if (
+        clickedUserId.toString() !== recipientId.toString() &&
+        clickedUserId.toString() !== (whisperData.senderId ? whisperData.senderId.toString() : null) &&
+        clickedUserId.toString() !== (whisperData.recipientId ? whisperData.recipientId.toString() : null)
+      ) {
+        // Not recipient or sender — unauthorized
+        await client.invoke(
+          new Api.messages.SetBotCallbackAnswer({
+            queryId: callbackQueryId,
+            message: "Nahi bhai, yeh message tere liye nahi hai. Dusron ke raaz padhna mana hai 😏",
+            alert: true,
+          })
+        );
+        return;
+      }
+
+      // Authorized: send the whisper message in the bot chat (not alert)
+      await client.sendMessage(clickedUserId, {
+        message: `🤫 Whisper message:\n\n${whisperData.message}`,
+        parseMode: "markdown",
+      });
+
+      // Show alert that message was sent to bot chat
       await client.invoke(
         new Api.messages.SetBotCallbackAnswer({
           queryId: callbackQueryId,
-          message: "Nahi bhai, yeh message tere liye nahi hai. Dusron ke raaz padhna mana hai 😏",
+          message: "Message sent to bot chat. Now click 'Open Bot' button to reveal.",
           alert: true,
         })
       );
-      return;
-    }
 
-    // Authorized: show the whisper with expiry info
-    await client.invoke(
-      new Api.messages.SetBotCallbackAnswer({
-        queryId: callbackQueryId,
-        message: `${whisperData.message}`,
-        alert: true,
-      })
-    );
+      // Edit the original message in the group chat to replace buttons with three buttons: Reveal, Send to Bot, Open Bot
+      try {
+        const originalMessage = event.message;
+        if (originalMessage) {
+          const chat = originalMessage.peerId;
+          const msgId = originalMessage.id;
+          const botUsername = "funwalabot"; // Replace with your bot username if different
+          const newButtons = new Api.ReplyInlineMarkup({
+            rows: [
+              new Api.KeyboardButtonRow({
+                buttons: [
+                  new Api.KeyboardButtonCallback({
+                    text: "Reveal",
+                    data: Buffer.from(`whisperKey::${whisperKey}::${recipientId}`, 'utf-8').slice(0, 64),
+                  }),
+                ],
+              }),
+              new Api.KeyboardButtonRow({
+                buttons: [
+                  new Api.KeyboardButtonCallback({
+                    text: "Send to Bot",
+                    data: Buffer.from(`revealInBot::${whisperKey}::${recipientId}`, 'utf-8').slice(0, 64),
+                  }),
+                ],
+              }),
+              new Api.KeyboardButtonRow({
+                buttons: [
+                  new Api.KeyboardButtonUrl({
+                    text: "Open Bot",
+                    url: `https://t.me/${botUsername}`,
+                  }),
+                ],
+              }),
+            ],
+          });
+          await client.invoke(
+            new Api.messages.EditMessage({
+              peer: chat,
+              id: msgId,
+              replyMarkup: newButtons,
+            })
+          );
+        }
+      } catch (editError) {
+        console.error("Failed to edit original message after revealInBot callback:", editError);
+      }
+
+
+    }
   } catch (error) {
-    console.error("Error handling button callback:", error);
+    if (error.code === 400 && error.errorMessage === 'MESSAGE_TOO_LONG') {
+      // Show alert that message is too large to display here
+      await client.invoke(
+        new Api.messages.SetBotCallbackAnswer({
+          queryId: event.query.queryId,
+          message: "Message too large to display here. Please reveal it in the bot chat.",
+          alert: true,
+        })
+      );
+    } else {
+      console.error("Error handling button callback:", error);
+    }
   }
 }
