@@ -276,7 +276,7 @@ export async function ButtonHandler(event) {
 
     console.log("callback", callbackData)
 
-    if (callbackData.startsWith("whisperKey::")) {
+    if (callbackData.startsWith("whisper::")) {
       const parts = callbackData.split("::");
       if (parts.length < 3) return;
 
