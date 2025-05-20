@@ -45,13 +45,13 @@ export async function replyWithFun(chat, msgId, message, sender) {
     console.error("Error occurred while replying with fun message:", error);
   }
 }
-export async function replyWithCustomMessage(chat, msgId, message) {
+export async function replyWithCustomMessage(chat, msgToBeEditedId,msgId, message) {
   try {
     // const rawInput = message.trim();
     // const cleanedJsonString = rawInput.replace(/^```json\s*|\s*```$/g, '');
     // const response = JSON.parse(cleanedJsonString).response
     const html = converter.makeHtml(message);
-    await client.sendMessage(chat, { message:html, replyTo: msgId ,parseMode:"html" });
+    await client.editMessage(chat, { text:html,message:msgToBeEditedId, replyTo: msgId ,parseMode:"html" });
   } catch (error) {
     console.error("Error occurred while replying with message:", error);
   }

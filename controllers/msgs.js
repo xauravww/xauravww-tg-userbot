@@ -266,8 +266,27 @@ async function eventPrint(event) {
   // **Catch-All Section (N8N Flags)**
   if (!startsWithAnyCommand(msgText, allCommands)) {
     try {
+      if(!event.isPrivate && !event.message.mentioned){
+        return;
+      }
       if (msgText.startsWith("🤫 a whisper has been sent")) return;
+      const voiceToggle = getGlobalValue("voice_toggle");
+      const loadingtext = voiceToggle
+        ? "🙊Speaking •၊၊||၊|။||||။၊|။• Hold On.."
+        : "✎Typing •၊၊||၊|။||||။၊|။•";
+      let msgToBeEditedId;
 
+      // If chat or msgId is null or invalid, skip sending loading message to avoid errors
+      let msgToBeEdited;
+      if (chat && msgID && typeof chat !== 'string' && typeof msgID !== 'string') {
+        msgToBeEdited = await client.sendMessage(chat, {
+          message: loadingtext,
+          replyTo: msgID,
+        });
+        msgToBeEditedId = msgToBeEdited.id;
+      } else {
+        msgToBeEditedId = null;
+      }
       // Use AI-based classification function
       const { classifyAI } = await import("./Functions/classify-ai.js");
       const classification = await classifyAI(msgText, message, sender.id);
@@ -276,7 +295,7 @@ async function eventPrint(event) {
       const flag = classification.endpoint;
       const translatedMsg = classification.message;
       const needsDownloading = classification.download;
-      queueRequest(replyWithCustomMessage, 1, chat, msgID, classification)
+      queueRequest(replyWithCustomMessage, 1, chat, msgToBeEditedId, msgID, classification)
 
       // console.log("flag",flag)
 
