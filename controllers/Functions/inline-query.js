@@ -5,6 +5,7 @@ import { Api } from "telegram";
 import path from "path"
 import { CallbackQuery } from "telegram/events/CallbackQuery.js";
 import { v4 as uuidv4 } from "uuid";
+import dayjs from "dayjs";
 dotenv.config({ path: path.resolve(".env") })
 
 export async function inlineQueryHandler() {
@@ -174,16 +175,15 @@ export async function inlineQueryHandler() {
           return;
         }
 
-        // Generate unique key for whisper message storage
-        const whisperKey = `whisper:${uuidv4()}`;
+        // Use a deterministic key based on secret and recipient to keep only last one
+        const baseKey = `whisper:${finalRecipient}:${secret}`;
 
-        // Store whisper message in Redis with TTL
-        // Store both message, senderId and recipientId as JSON string
-        await redisClient.setEx(whisperKey, ttlMinutes * 60, JSON.stringify({ message: secret, senderId: event.userId, recipientId: finalRecipient }));
+        // Store whisper message in Redis with TTL directly at baseKey
+        await redisClient.setEx(baseKey, ttlMinutes * 60, JSON.stringify({ message: secret, senderId: event.userId, recipientId: finalRecipient }));
 
-        // Calculate expiry date/time string
-        const expiryDate = new Date(Date.now() + ttlMinutes * 60000);
-        const expiryString = expiryDate.toLocaleString();
+        // Calculate expiry date/time string using dayjs
+        const expiryDate = dayjs().add(ttlMinutes, 'minute');
+        const expiryString = expiryDate.format('DD/MM/YYYY HH:mm:ss');
 
         const results = [
           new Api.InputBotInlineResult({
@@ -200,7 +200,7 @@ export async function inlineQueryHandler() {
                     buttons: [
                       new Api.KeyboardButtonCallback({
                         text: "Reveal Whisper",
-                        data: Buffer.from(`whisperKey::${whisperKey}::${finalRecipient}`, 'utf-8').slice(0, 64),
+                        data: Buffer.from(`whisperKey::${baseKey}::${finalRecipient}`, 'utf-8').slice(0, 64),
                       }),
                     ],
                   }),
@@ -208,7 +208,7 @@ export async function inlineQueryHandler() {
                     buttons: [
                       new Api.KeyboardButtonCallback({
                         text: "Send to Bot",
-                        data: Buffer.from(`revealInBot::${whisperKey}::${finalRecipient}`, 'utf-8').slice(0, 64),
+                        data: Buffer.from(`revealInBot::${baseKey}::${finalRecipient}`, 'utf-8').slice(0, 64),
                       }),
                     ],
                   }),
