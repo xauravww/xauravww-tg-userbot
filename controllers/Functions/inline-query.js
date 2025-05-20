@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { Api } from "telegram";
 import path from "path"
 import { CallbackQuery } from "telegram/events/CallbackQuery.js";
+import { v4 as uuidv4 } from "uuid";
 dotenv.config({ path: path.resolve(".env") })
 
 export async function inlineQueryHandler() {
@@ -83,11 +84,41 @@ export async function inlineQueryHandler() {
     else {
       const query = event.query;
       const MAX_WORDS = 200;
+      const MAX_TTL_MINUTES = 2880; // 2 days max TTL
       const match = query.match(/(.*?)(@(?:[\w\d_]{5,}|[0-9]{6,}))$/);
       if (match) {
-        const secret = match[1].trim();
+        let secret = match[1].trim();
         let rawRecipient = match[2].trim();  // e.g., "@123456789" or "@username123"
         let recipient = rawRecipient.slice(1); // remove the '@'
+
+        // Check for TTL override in secret, format: #x where x is minutes
+        let ttlMinutes = 60; // default 60 minutes
+        const ttlMatch = secret.match(/#(\d+)/);
+        if (ttlMatch) {
+          ttlMinutes = parseInt(ttlMatch[1]);
+          if (ttlMinutes > MAX_TTL_MINUTES) {
+            await client.invoke(
+              new Api.messages.SetInlineBotResults({
+                results: [new Api.InputBotInlineResult({
+                  id: "0",
+                  type: "article",
+                  title: "Error",
+                  description: `TTL exceeds max limit of ${MAX_TTL_MINUTES} minutes.`,
+                  sendMessage: new Api.InputBotInlineMessageText({
+                    message: `TTL exceeds max limit of ${MAX_TTL_MINUTES} minutes.`,
+                    noWebpage: true
+                  })
+                })],
+                queryId: event.queryId,
+                gallery: false,
+                cacheTime: 10
+              })
+            );
+            return;
+          }
+          // Remove TTL from secret message
+          secret = secret.replace(/#\d+/, '').trim();
+        }
 
         let finalRecipient;
 
@@ -102,8 +133,6 @@ export async function inlineQueryHandler() {
         if (typeof recipient !== 'string' || typeof secret !== 'string') {
           return;
         }
-
-        // console.log("event",event)
 
         const wordCount = secret.split(/\s+/).length;
         if (wordCount > MAX_WORDS) {
@@ -126,14 +155,26 @@ export async function inlineQueryHandler() {
           );
           return;
         }
+
+        // Generate unique key for whisper message storage
+        const whisperKey = `whisper:${uuidv4()}`;
+
+        // Store whisper message in Redis with TTL
+        // Store both message, senderId and recipientId as JSON string
+        await redisClient.setEx(whisperKey, ttlMinutes * 60, JSON.stringify({ message: secret, senderId: event.userId, recipientId: finalRecipient }));
+
+        // Calculate expiry date/time string
+        const expiryDate = new Date(Date.now() + ttlMinutes * 60000);
+        const expiryString = expiryDate.toLocaleString();
+
         const results = [
           new Api.InputBotInlineResult({
             id: `whisper-${event.queryId}`,
             title: `Whisper for ${recipient}`,
-            description: `Private whisper for ${recipient}`,
+            description: `Private whisper for ${recipient}. Expires at ${expiryString}`,
             type: "article",
             sendMessage: new Api.InputBotInlineMessageText({
-              message: `🤫 A whisper has been sent. Only ${recipient} can reveal it.`,
+              message: `🤫 A whisper has been sent. Only ${recipient} can reveal it.\n\n*Expires at:* ${expiryString}`,
               noWebpage: true,
               replyMarkup: new Api.ReplyInlineMarkup({
                 rows: [
@@ -141,12 +182,14 @@ export async function inlineQueryHandler() {
                     buttons: [
                       new Api.KeyboardButtonCallback({
                         text: "Reveal Whisper",
-                        data: Buffer.from(`whisper::${finalRecipient}::${secret}::${event.userId}`),
+                        data: Buffer.from(`whisperKey::${whisperKey}::${finalRecipient}`, 'utf-8').slice(0, 64),
                       }),
+
                     ],
                   }),
                 ],
               }),
+              parseMode: "markdown"
             }),
           }),
         ];
@@ -167,7 +210,7 @@ export async function inlineQueryHandler() {
               title: "Invalid Input - Click me",
               description: "Know how to use whisper bot",
               sendMessage: new Api.InputBotInlineMessageText({
-                message: "Please use the format: <secret-msg> @<recipient user_name or user_id>\n@funwalabot hello @1223342423 \n @funwalabot hello @username_of_ur_frnd",
+                message: "Please use the format: <secret-msg> @<recipient user_name or user_id>\n@bot secret #x @recipient\n\nWhere #x is optional TTL in minutes (max 2880 = 2 days).",
                 noWebpage: true
               })
             })],
@@ -178,57 +221,76 @@ export async function inlineQueryHandler() {
         );
       }
     }
-
-
-
-
-
   })
 }
-
 
 client.addEventHandler(ButtonHandler, new CallbackQuery({}));
 
 // Callback handler for button clicks
 export async function ButtonHandler(event) {
-  const clickedUserId = event.query.userId;
-  if (!clickedUserId) return
-  const callbackData = event.query.data.toString("utf-8").trim();
-  const callbackQueryId = event.query.queryId;
+  try {
+    const clickedUserId = event.query.userId;
+    if (!clickedUserId) return;
+    const callbackData = event.query.data.toString("utf-8").trim();
+    const callbackQueryId = event.query.queryId;
 
-  // Expected format: whisper::<recipientId>::<secret>::<senderId>
+    console.log("callback",callbackData)
 
-  if (!callbackData.startsWith("whisper::")) return;
+    // Expected format: whisperKey::<key>::<recipientId>::<senderId>
+    if (!callbackData.startsWith("whisperKey::")) return;
 
-  const parts = callbackData.split("::");
-  if (parts.length < 4) return;
-  
-  console.log("parts", parts)
+    const parts = callbackData.split("::");
+    if (parts.length < 3) return;
 
-  const [, recipientId, secret, senderId] = parts;
-  if (
-    clickedUserId.toString() !== recipientId.toString() &&
-    clickedUserId.toString() !== senderId.toString()
-  ) {
-    // Not recipient or sender — unauthorized
+    const [, whisperKey, recipientId] = parts;
+    // senderId is stored in Redis, so we fetch it for authorization
+
+    // Fetch whisper message and senderId from Redis
+    const storedData = await redisClient.get(whisperKey);
+    if (!storedData) {
+      await client.invoke(
+        new Api.messages.SetBotCallbackAnswer({
+          queryId: callbackQueryId,
+          message: "Whisper message expired or not found.",
+          alert: true,
+        })
+      );
+      return;
+    }
+
+    // storedData format: JSON string with { message: string, senderId: string }
+    let whisperData;
+    try {
+      whisperData = JSON.parse(storedData);
+    } catch (e) {
+      whisperData = { message: storedData, senderId: null };
+    }
+
+    if (
+      clickedUserId.toString() !== recipientId.toString() &&
+      clickedUserId.toString() !== (whisperData.senderId ? whisperData.senderId.toString() : null) &&
+      clickedUserId.toString() !== (whisperData.recipientId ? whisperData.recipientId.toString() : null)
+    ) {
+      // Not recipient or sender — unauthorized
+      await client.invoke(
+        new Api.messages.SetBotCallbackAnswer({
+          queryId: callbackQueryId,
+          message: "Nahi bhai, yeh message tere liye nahi hai. Dusron ke raaz padhna mana hai 😏",
+          alert: true,
+        })
+      );
+      return;
+    }
+
+    // Authorized: show the whisper with expiry info
     await client.invoke(
       new Api.messages.SetBotCallbackAnswer({
         queryId: callbackQueryId,
-        message: "Nahi bhai, yeh message tere liye nahi hai. Dusron ke raaz padhna mana hai 😏",
+        message: `${whisperData.message}`,
         alert: true,
       })
     );
-    return;
+  } catch (error) {
+    console.error("Error handling button callback:", error);
   }
-
-  // Authorized: show the whisper
-  await client.invoke(
-    new Api.messages.SetBotCallbackAnswer({
-      queryId: callbackQueryId,
-      message: `${secret}`,
-      alert: true,
-    })
-  );
 }
-
-
