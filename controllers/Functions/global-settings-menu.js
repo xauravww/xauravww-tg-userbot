@@ -125,7 +125,7 @@ if(!clickedUserId) return
       ];
 
       await client.editMessage(chat, {
-        text: `Current model is ${getGlobalValue("model_mode") || "gemini-flash"} \n<pre>Choose your model:</pre>`,
+        text: `Current model is ${getGlobalValue("model_mode") || "gemini-flash"} \nVoice Toggle: ${getGlobalValue("voice_toggle")} <pre>Choose your model:</pre>`,
         message: globalchat[originalUserId].initialMsgId,
         buttons: textModelsButtons,
         parseMode: "md2",

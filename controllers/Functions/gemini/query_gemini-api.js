@@ -37,17 +37,19 @@ export async function gemini(chat, msgId, messageText, senderId, isSlashEndpoint
       // Define the filter text
       const filterText = process.env.SYSTEM_INSTRUCTIONS_GEMINI;
 
-      // Add user message to chat history for context
-      chatHistoryManager.addMessage(senderId, { role: "user", parts: [{ text: newString }] });
+    // Add user message to chat history for context
+    chatHistoryManager.addMessage(senderId, { role: "user", parts: [{ text: newString }] });
 
-      // Handle the Gemini query
-      const { html, responseText } = await handleGeminiQuery(
-        filterText + "My Question: " + newString,
-        senderId
-      );
+    // Handle the Gemini query
+    const { html, responseText } = await handleGeminiQuery(
+      newString,
+      senderId
+    );
 
-      // Return only the responseText string for classification or other uses
-      return responseText?.toString() || "";
+    // Return only the responseText string for classification or other uses
+    return responseText?.toString() || "";
+
+
 
 
     } else if (modelMode === "nvidia-pro") {
