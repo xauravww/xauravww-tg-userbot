@@ -53,9 +53,8 @@ If the message is asking for code, explanations, or general knowledge, classify 
 
 
 
-  // If Nvidia model is active, proceed with handling image
 
-  const classificationResponse = await gemini(null, null, "\nUser message: " + text);
+  const classificationResponse = await gemini(null, null, "\nUser message: " + text,userId);
 
   // Parse the JSON response safely
   let classification;
