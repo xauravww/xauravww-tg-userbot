@@ -45,6 +45,8 @@ app.get("/", (req, res) => {
   res.send("I am working properly");
 });
 
+app.use('/.well-known/acme-challenge', express.static(path.join(__dirname, 'public/.well-known/acme-challenge')));
+
 app.listen(3000, () => {
   console.log("Server started on port 3000");
 });
