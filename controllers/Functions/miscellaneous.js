@@ -166,6 +166,7 @@ Use the buttons below to get help on each feature. For commands like /gen, /song
 
 For inline queries, you can use the bot inline mode to search audio or send private whispers.
 For whisper bot, use the format: <secret-msg> @recipient or <secret> <user_id>
+Use /cgender to toggle your bot's gender (male/female).
 `,
     replyTo: msgId,
     buttons: buttons,

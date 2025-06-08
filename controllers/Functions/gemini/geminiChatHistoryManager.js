@@ -1,5 +1,5 @@
 import { GoogleGenAI, createUserContent } from "@google/genai";
-import { getGlobalValue, setGlobalValue } from "../../utils/global-context.js";
+import { getGlobalValue, setGlobalValue, getUserSpecificValue } from "../../utils/global-context.js";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
@@ -31,10 +31,12 @@ class GeminiChatHistoryManager {
     this.chatHistories = getGlobalValue(this.globalKey) || {};
   }
 
-  getHistory(senderId) {
+  getHistory(senderId, systemInstruction) {
     if (!this.chatHistories[senderId]) {
+      const userGender = getUserSpecificValue(senderId, "gender") || "male";
+      const dynamicSystemInstruction = process.env.SYSTEM_INSTRUCTIONS_GEMINI ? `${process.env.SYSTEM_INSTRUCTIONS_GEMINI} ${userGender}` : userGender;
       this.chatHistories[senderId] = [
-        { role: "system", parts: [{ text: process.env.SYSTEM_INSTRUCTIONS_GEMINI || "" }] }
+        { role: "system", parts: [{ text: systemInstruction || dynamicSystemInstruction }] }
       ];
       setGlobalValue(this.globalKey, this.chatHistories);
     }
@@ -48,8 +50,8 @@ class GeminiChatHistoryManager {
     setGlobalValue(this.globalKey, this.chatHistories);
   }
 
-  async sendMessage(senderId, message) {
-    const history = this.getHistory(senderId);
+  async sendMessage(senderId, message, systemInstruction) {
+    const history = this.getHistory(senderId, systemInstruction);
 
     // Prepare contents array including full history plus current user message
     const contents = [
@@ -60,9 +62,7 @@ class GeminiChatHistoryManager {
     const response = await ai.models.generateContent({
       model: process.env.GEMINI_MODEL_NAME || "gemini-2.0-flash",
       contents,
-      config: {
-        systemInstruction: process.env.SYSTEM_INSTRUCTIONS_GEMINI || "",
-      },
+      systemInstruction: systemInstruction || process.env.SYSTEM_INSTRUCTIONS_GEMINI || "",
     });
 
     const responseText = response.text;
@@ -72,6 +72,14 @@ class GeminiChatHistoryManager {
     this.addMessage(senderId, { role: "model", parts: [{ text: responseText }] });
 
     return responseText;
+  }
+
+  // New method to clear chat history for a specific sender
+  clearHistory(senderId) {
+    if (this.chatHistories[senderId]) {
+      delete this.chatHistories[senderId];
+      setGlobalValue(this.globalKey, this.chatHistories);
+    }
   }
 }
 

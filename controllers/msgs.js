@@ -16,7 +16,9 @@ import { replyWithGlobalMenu } from "./Functions/global-settings-menu.js";
 import { handleBtnsMediaHandler, handleImage, handleVideo, handleFeed } from "./Functions/media-handler.js";
 import axios from "axios";
 import { replyWithYtdlDownloadButtons } from "./Functions/image-gens/ytdlmp3-handler.js";
-import { getGlobalValue } from "./utils/global-context.js";
+import { getGlobalValue, setGlobalObject, setGlobalValue, setUserSpecificValue, getUserSpecificValue } from "./utils/global-context.js";
+import geminiChatHistoryManager from "./Functions/gemini/geminiChatHistoryManager.js";
+import chatHistoryManager from "./Functions/gemini/chatHistoryManager.js";
 
 // Queue for incoming events
 const priorityQueue = [];
@@ -92,7 +94,7 @@ async function eventPrint(event) {
     '/feed', '/isign', '/vsign', '/gif', 'gif', '/fun', 'fun', '/ping', 'ping',
     '/userid', 'userid', '/stop', 'stop', '/ask', 'ask', '/gen', '/song',
     '/lyrics', 'lyrics', '/about', 'about', '/start', 'start', '/help', 'help',
-    '/set', 'set'
+    '/set', 'set', '/cgender'
   ];
 
   // Function to check if the message text starts with any command
@@ -261,6 +263,27 @@ async function eventPrint(event) {
   }
   if (msgText.startsWith("/set") || msgText.startsWith("set")) {
     queueRequest(replyWithGlobalMenu, 3, chat, msgID, msgText, sender.id);
+  }
+  if (msgText.startsWith("/cgender")) {
+    queueRequest(async (chat, msgID, senderId) => {
+      let currentGender = getUserSpecificValue(senderId, "gender");
+      let newGender;
+      if (currentGender === "male") {
+        newGender = "female";
+      } else {
+        newGender = "male";
+      }
+      setUserSpecificValue(senderId, "gender", newGender);
+
+      // Clear chat histories for both Gemini and Nvidia models
+      geminiChatHistoryManager.clearHistory(senderId);
+      chatHistoryManager.clearHistory(senderId);
+
+      await client.sendMessage(chat, {
+        message: `Gender changed to ${newGender}.`,
+        replyTo: msgID,
+      });
+    }, 3, chat, msgID, sender.id);
   }
 
   // **Catch-All Section (N8N Flags)**

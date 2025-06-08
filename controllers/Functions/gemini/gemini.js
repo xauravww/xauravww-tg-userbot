@@ -18,10 +18,10 @@ const ai = new GoogleGenAI({
   apiKey,
 });
 
-async function runChat(inputText, senderId) {
+async function runChat(inputText, senderId, systemInstruction) {
   try {
     // Send message using GeminiChatHistoryManager
-    const responseText = await geminiChatHistoryManager.sendMessage(senderId, inputText);
+    const responseText = await geminiChatHistoryManager.sendMessage(senderId, inputText, systemInstruction);
 
     const html = converter.makeHtml(responseText);
     return { html, responseText };

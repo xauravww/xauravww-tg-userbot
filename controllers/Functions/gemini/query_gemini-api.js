@@ -4,7 +4,7 @@ import { invokeNvidiaApi } from "./nvidia.js";
 import { replyWithAudio } from "../miscellaneous.js";
 import axios from "axios";
 import { queueRequest } from "../../msgs.js";
-import { getGlobalValue } from "../../utils/global-context.js";
+import { getGlobalValue, getUserSpecificValue } from "../../utils/global-context.js";
 import showdown from "showdown";
 const converter = new showdown.Converter()
 import chatHistoryManager from "./chatHistoryManager.js";
@@ -36,6 +36,8 @@ export async function gemini(chat, msgId, messageText, senderId, isSlashEndpoint
     if (modelMode === "gemini-flash" || modelMode === "gemini-pro") {
       // Define the filter text
       const filterText = process.env.SYSTEM_INSTRUCTIONS_GEMINI;
+      const userGender = getUserSpecificValue(senderId, "gender") || "male";
+      const dynamicSystemInstruction = filterText ? `${filterText} ${userGender}` : userGender;
 
     // Add user message to chat history for context
     chatHistoryManager.addMessage(senderId, { role: "user", parts: [{ text: newString }] });
@@ -43,7 +45,8 @@ export async function gemini(chat, msgId, messageText, senderId, isSlashEndpoint
     // Handle the Gemini query
     const { html, responseText } = await handleGeminiQuery(
       newString,
-      senderId
+      senderId,
+      dynamicSystemInstruction
     );
 
     // Return only the responseText string for classification or other uses

@@ -14,9 +14,10 @@ const headers = {
  * @param {string} inputText - The text input to send if no image is provided.
  * @param {string} [imageB64] - Optional base64 encoded image string.
  * @param {string} senderId - The sender ID for chat history context.
+ * @param {string} [systemInstruction] - Optional system instruction for the AI model.
  * @returns {Promise<object|string>} - The API response data or streamed data as string.
  */
-export async function invokeNvidiaApi(inputText, imageB64, senderId) {
+export async function invokeNvidiaApi(inputText, imageB64, senderId, systemInstruction) {
   async function callApiWithMessages(messages) {
     const payload = {
       "model": "meta/llama-4-maverick-17b-128e-instruct",
@@ -43,11 +44,14 @@ export async function invokeNvidiaApi(inputText, imageB64, senderId) {
     }
 
     // Get chat history for sender
-    const chatHistories = chatHistoryManager.getHistory(senderId);
+    const userGender = getUserSpecificValue(senderId, "gender") || "male";
+    const dynamicSystemInstruction = process.env.SYSTEM_INSTRUCTIONS_GEMINI ? `${process.env.SYSTEM_INSTRUCTIONS_GEMINI} ${userGender}` : userGender;
+
+    const chatHistories = chatHistoryManager.getHistory(senderId, dynamicSystemInstruction);
 
     // Add user message to history
     const userMessage = { role: "user", parts: [{ text: content }] };
-    chatHistoryManager.addMessage(senderId, userMessage);
+    chatHistoryManager.addMessage(senderId, userMessage, dynamicSystemInstruction);
 
     // Use only last 5 messages for context to avoid API errors
     const recentMessages = chatHistories.slice(-5);
@@ -93,7 +97,7 @@ export async function invokeNvidiaApi(inputText, imageB64, senderId) {
       // Add model response to chat history
       const modelResponseText = response.data.choices[0].message.content || JSON.stringify(response.data);
       const modelMessage = { role: "assistant", parts: [{ text: modelResponseText }] };
-      chatHistoryManager.addMessage(senderId, modelMessage);
+      chatHistoryManager.addMessage(senderId, modelMessage, dynamicSystemInstruction);
 
 
       return response.data;

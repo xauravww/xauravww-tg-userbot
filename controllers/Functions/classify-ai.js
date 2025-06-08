@@ -1,4 +1,4 @@
-import { getGlobalValue } from "../utils/global-context.js";
+import { getGlobalValue, getUserSpecificValue } from "../utils/global-context.js";
 import { gemini } from "./gemini/query_gemini-api.js";
 
 /**
@@ -15,6 +15,8 @@ const globalchat = {}
 export async function classifyAI(text, message, userId) {
   // System prompt for classification
   const basePrompt = process.env.SYSTEM_INSTRUCTIONS_GEMINI
+  const userGender = getUserSpecificValue(userId, "gender") || "male";
+  const dynamicSystemInstruction = basePrompt ? `${basePrompt} ${userGender}` : userGender;
   const classificationPrompt = `
 You are a message classifier 
 
@@ -54,7 +56,7 @@ If the message is asking for code, explanations, or general knowledge, classify 
 
 
 
-  const classificationResponse = await gemini(null, null, "\nUser message: " + text,userId);
+  const classificationResponse = await gemini(null, null, "\nUser message: " + text,userId, false, dynamicSystemInstruction);
 
   // Parse the JSON response safely
   let classification;

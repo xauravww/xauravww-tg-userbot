@@ -38,4 +38,19 @@ function getGlobalValue(item) {
   return global_object[item];
 }
 
-export { getGlobalValue , setGlobalObject , setGlobalValue}
+// New function to set a user-specific value
+function setUserSpecificValue(userid, item, value) {
+  const user_data_key = `user_data_${userid}`;
+  const user_specific_data = JSON.parse(getvalueData(user_data_key)) || {};
+  user_specific_data[item] = value;
+  setvalueData(user_data_key, JSON.stringify(user_specific_data));
+}
+
+// New function to get a user-specific value
+function getUserSpecificValue(userid, item) {
+  const user_data_key = `user_data_${userid}`;
+  const user_specific_data = JSON.parse(getvalueData(user_data_key)) || {};
+  return user_specific_data[item];
+}
+
+export { getGlobalValue , setGlobalObject , setGlobalValue, setUserSpecificValue, getUserSpecificValue }

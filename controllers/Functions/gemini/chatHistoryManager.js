@@ -26,7 +26,7 @@ function pruneHistory(history) {
 
 
 // Class to manage chat histories per senderId
-import { getGlobalValue, setGlobalValue } from "../../utils/global-context.js";
+import { getGlobalValue, setGlobalValue, getUserSpecificValue } from "../../utils/global-context.js";
 
 class ChatHistoryManager {
   constructor() {
@@ -34,21 +34,31 @@ class ChatHistoryManager {
     this.chatHistories = getGlobalValue(this.globalKey) || {};
   }
 
-  getHistory(senderId) {
+  getHistory(senderId, systemInstruction) {
     if (!this.chatHistories[senderId]) {
+      const userGender = getUserSpecificValue(senderId, "gender") || "male";
+      const dynamicSystemInstruction = process.env.SYSTEM_INSTRUCTIONS_GEMINI ? `${process.env.SYSTEM_INSTRUCTIONS_GEMINI} ${userGender}` : userGender;
       this.chatHistories[senderId] = [
-        { role: "system", content: process.env.SYSTEM_INSTRUCTIONS_GEMINI }
+        { role: "system", content: systemInstruction || dynamicSystemInstruction }
       ];
       setGlobalValue(this.globalKey, this.chatHistories);
     }
     return this.chatHistories[senderId];
   }
 
-  addMessage(senderId, message) {
-    const history = this.getHistory(senderId);
+  addMessage(senderId, message, systemInstruction) {
+    const history = this.getHistory(senderId, systemInstruction);
     history.push(message);
     pruneHistory(history);
     setGlobalValue(this.globalKey, this.chatHistories);
+  }
+
+  // New method to clear chat history for a specific sender
+  clearHistory(senderId) {
+    if (this.chatHistories[senderId]) {
+      delete this.chatHistories[senderId];
+      setGlobalValue(this.globalKey, this.chatHistories);
+    }
   }
 }
 
