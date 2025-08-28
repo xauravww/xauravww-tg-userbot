@@ -181,7 +181,10 @@ Use /cgender to toggle your bot's gender (male/female).
 
 
 
-client.addEventHandler(ButtonHandler, new CallbackQuery({}));
+client.addEventHandler(ButtonHandler, new CallbackQuery({ func: (event) => {
+  const callbackData = event.query.data.toString();
+  return !(callbackData.startsWith('select-song') || callbackData.startsWith('next-page') || callbackData.startsWith('prev-page'));
+}}));
 
 // Callback handler for button clicks
 export async function ButtonHandler(event) {

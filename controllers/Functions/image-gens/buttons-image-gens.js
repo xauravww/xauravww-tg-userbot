@@ -51,8 +51,10 @@ export async function genButtons(userId, chat, msgId, message) {
   // setvalueData(userId, initialMsg.id);
 }
 
-// Add the button callback handler for the image generation buttons
-client.addEventHandler(ButtonHandler, new CallbackQuery({}));
+client.addEventHandler(ButtonHandler, new CallbackQuery({ func: (event) => {
+  const callbackData = event.query.data.toString();
+  return !(callbackData.startsWith('select-song') || callbackData.startsWith('next-page') || callbackData.startsWith('prev-page'));
+}}));
 
 // Callback handler for button clicks
 async function ButtonHandler(event) {

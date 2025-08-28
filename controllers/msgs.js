@@ -11,7 +11,7 @@ import { replyWithFun, replyWithUserId, replyWithAbout, replyWithStart, replyWit
 import { gemini } from "./Functions/gemini/query_gemini-api.js";
 import { lyricsFinder } from "./Functions/lyrics.js";
 import { genButtons } from "./Functions/image-gens/buttons-image-gens.js";
-import { songDownloader } from "./Functions/yt2mp3/song.js";
+import { songDownloader, handleSongSelection } from "./Functions/yt2mp3/song.js";
 import { replyWithGlobalMenu } from "./Functions/global-settings-menu.js";
 import { handleBtnsMediaHandler, handleImage, handleVideo, handleFeed } from "./Functions/media-handler.js";
 import axios from "axios";
@@ -60,6 +60,27 @@ async function eventPrint(event) {
   const peerId = event.message.peerId.chatId || event.message.peerId.channelId;
   const chat = await client.getInputEntity(event.message.peerId);
   const sender = await message.getSender();
+  
+  // Check if this is a reply to a song search result message
+  if (event.message.replyTo && event.message.replyTo.replyToMsgId) {
+    const originalMsgID = event.message.replyTo.replyToMsgId;
+    // Check if the message contains only a number (user selection)
+    if (/^\d+$/.test(msgText.trim())) {
+      // Check if the original message was from the bot and contained song search results
+      try {
+        const originalMessage = await client.getMessages(chat, {ids: [originalMsgID]});
+        if (originalMessage && originalMessage[0] && 
+            originalMessage[0].message && 
+            originalMessage[0].message.includes("Here are the top results")) {
+          // This is a song selection, handle it accordingly
+          queueRequest(handleSongSelection, 1, chat, msgID, msgText, originalMsgID);
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking original message:", error);
+      }
+    }
+  }
 
   const isVideo = event?.message?.media?.document?.mimeType == "video/mp4" || event?.message?.media?.document?.mimeType == "video/webm";
   const isWebp = event?.message?.media?.document?.mimeType == "image/webp";

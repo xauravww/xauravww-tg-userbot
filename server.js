@@ -2,12 +2,14 @@ import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 import { fileURLToPath } from "url";
 const { NewMessage } = require("telegram/events");
+const { CallbackQuery } = require("telegram/events/CallbackQuery.js");
 
 import graphApiRouters from "./routers/graph-api.js";
 import path from "path";
 import "./client-init.js";
 import { client, connectClient } from "./client-init.js";
 import { eventPrint } from "./controllers/msgs.js";
+import { handleSongSelection } from "./controllers/Functions/yt2mp3/song.js";
 const express = require("express");
 const app = express();
 import bodyParser from "body-parser";
@@ -38,7 +40,11 @@ inlineQueryHandler()
   }, new NewMessage({}));
 
 
-  // console.log("Listening for new messages...");
+  // Register the button callback handler
+  client.addEventHandler(handleSongSelection, new CallbackQuery({ func: (event) => {
+    const callbackData = event.query.data.toString();
+    return callbackData.startsWith('select-song') || callbackData.startsWith('next-page') || callbackData.startsWith('prev-page');
+  }}));
 })();
 
 app.get("/", (req, res) => {

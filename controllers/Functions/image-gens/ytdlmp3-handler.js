@@ -31,8 +31,10 @@ export async function replyWithYtdlDownloadButtons(chat, msgId, message, userId)
   globalchat[userId].initialMsgId = initialMsg.id;
 }
 
-// Step 2: This is automatically triggered by Telegram for all button clicks
-client.addEventHandler(ButtonHandler, new CallbackQuery({}));
+client.addEventHandler(ButtonHandler, new CallbackQuery({ func: (event) => {
+  const callbackData = event.query.data.toString();
+  return !(callbackData.startsWith('select-song') || callbackData.startsWith('next-page') || callbackData.startsWith('prev-page'));
+}}));
 
 // Button click handler
 export async function ButtonHandler(event) {
